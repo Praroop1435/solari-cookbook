@@ -24,7 +24,9 @@ class Settings(BaseSettings):
     )
     gemini_model: str = Field(default="gemini-2.0-flash-lite")
     openai_api_key: str | None = Field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
+    openai_model: str = Field(default="gpt-4o-mini")
     anthropic_api_key: str | None = Field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY"))
+    anthropic_model: str = Field(default="claude-3-5-sonnet-20241022")
 
     # Server settings
     host: str = "0.0.0.0"

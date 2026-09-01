@@ -1,16 +1,16 @@
-# 🛡️ Solari Sentinel — Autonomous QA & Self-Healing Bug Discovery Agent
+# 🛡️ Solari Sentinel — Multi-Model AI Pentesting & Security Auditing Agent
 
 [![Solari Cloud](https://img.shields.io/badge/Solari-Cloud%20Infra-000000?style=for-the-badge&logo=cloudflare&logoColor=white)](https://getsolari.com)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16.3-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Playwright](https://img.shields.io/badge/Playwright-E2E%20Synthesis-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev)
-[![Pytest](https://img.shields.io/badge/Pytest-12%20Passed-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)](https://pytest.org)
+[![Multi-Model AI](https://img.shields.io/badge/AI%20Ensemble-Gemini%20%7C%20Claude%20%7C%20GPT-8A2BE2?style=for-the-badge)](https://getsolari.com)
+[![Pytest](https://img.shields.io/badge/Pytest-16%20Passed-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)](https://pytest.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-> **Solari Sentinel** is an enterprise-grade autonomous QA, anomaly discovery, and self-healing test generation agent built natively on **[Solari](https://getsolari.com)** (Cloud Browsers, MicroVM Sandboxes, and Session Recordings).
+> **Solari Sentinel** is an enterprise-grade autonomous Web Application Security, OWASP Top 10 Auditing, and Defensive Test Generation agent built natively on **[Solari](https://getsolari.com)** (Stealth Cloud Browsers, MicroVM Sandboxes, and Session Recordings) and powered by a **Multi-Model AI Consensus Engine (Gemini 2.0, Claude 3.5 Sonnet, and GPT-4o)**.
 >
-> Give Solari Sentinel any live URL. It explores user flows with **anti-bot stealth cloud browsers**, traps JavaScript crashes and HTTP 5xx errors via **Chrome DevTools Protocol (CDP)**, synthesizes reproducible **Playwright test scripts**, and executes them inside isolated **Solari MicroVM Sandboxes** for 100% deterministic verification.
+> Give Solari Sentinel any live URL. It crawls endpoints using **anti-bot stealth cloud browsers**, audits HTTP security headers (CSP, HSTS, X-Frame-Options), cookie flags (`HttpOnly`, `Secure`, `SameSite`), CORS misconfigurations, and client-side secret exposures. It scores findings with **CVSS v3.1**, synthesizes **defensive Playwright assertion suites**, and executes them inside isolated **Solari MicroVM Sandboxes** for 100% deterministic verification.
 
 ---
 

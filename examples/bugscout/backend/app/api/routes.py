@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse, StreamingResponse
 from ..config import settings
 from ..models.schemas import AgentEvent, AuditRequest
 from ..services.browser_agent import browser_agent
+from ..services.llm_ensemble import llm_ensemble
 
 try:
     from solari_browser import Solari
@@ -34,6 +35,7 @@ async def health_check():
         "gemini_configured": bool(
             settings.gemini_api_key and not settings.gemini_api_key.startswith("AIzaSy_your_")
         ),
+        "models": llm_ensemble.get_active_models(),
     }
 
 

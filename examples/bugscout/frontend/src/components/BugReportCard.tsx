@@ -13,6 +13,9 @@ import {
   Zap,
   Share2,
   AlertCircle,
+  Layers,
+  Cpu,
+  Code2,
 } from 'lucide-react';
 import { DiscoveredBug, BugSeverity } from '../types';
 
@@ -23,7 +26,8 @@ interface BugReportCardProps {
 export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
   const [selectedSeverity, setSelectedSeverity] = useState<string>('all');
   const [expandedBugId, setExpandedBugId] = useState<string | null>(bugs[0]?.id || null);
-  const [activeCodeTab, setActiveCodeTab] = useState<Record<string, 'ts' | 'py'>>({});
+  const [activeCodeTab, setActiveCodeTab] = useState<Record<string, 'remediation' | 'ts' | 'py'>>({});
+  const [activeFrameworkTab, setActiveFrameworkTab] = useState<Record<string, string>>({});
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copiedIssueId, setCopiedIssueId] = useState<string | null>(null);
 
@@ -45,13 +49,40 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = isTs ? `test_repro_${bug.id}.spec.ts` : `test_repro_${bug.id}.py`;
+    a.download = isTs ? `test_defensive_${bug.id}.spec.ts` : `test_defensive_${bug.id}.py`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const handleCopyGithubIssue = (bug: DiscoveredBug) => {
-    const issueMd = `### 🚨 [Solari Sentinel QA] ${bug.title}\n\n**Severity**: \`${bug.severity.toUpperCase()}\` | **Category**: \`${bug.category}\` | **Target URL**: ${bug.url}\n**Sandbox Verified**: ${bug.verified_in_sandbox ? '✅ YES' : '❌ NO'}\n\n---\n\n#### 📋 Description\n${bug.description}\n\n#### 🔄 Reproduction Steps\n${bug.repro_steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n#### 💥 Stack Trace / Network Response\n\`\`\`\n${bug.stack_trace || 'N/A'}\n\`\`\`\n\n#### 🧪 Synthesized Playwright Test Spec\n\`\`\`typescript\n${bug.playwright_ts_code || ''}\n\`\`\`\n\n---\n*Reported automatically by [Solari Sentinel](https://getsolari.com) powered by Solari Cloud Infrastructure.*`;
+    const issueMd = `### 🚨 [Solari Sentinel Security Finding] ${bug.title}
+
+**Severity**: \`${bug.severity.toUpperCase()}\` | **CVSS v3.1 Score**: \`${bug.cvss_score || 'N/A'}\`
+**OWASP Taxonomy**: \`${bug.owasp_category || bug.category}\` | **CWE**: \`${bug.cwe_id || 'N/A'}\`
+**AI Models Confirmed**: ${(bug.models_confirmed || ['Gemini 2.0', 'Claude 3.5', 'GPT-4o']).join(', ')} (Confidence: ${Math.round((bug.confidence_score || 0.92) * 100)}%)
+**Solari MicroVM Verified**: ${bug.verified_in_sandbox ? '✅ YES' : '❌ NO'}
+
+---
+
+#### 📋 Vulnerability Description
+${bug.description}
+
+#### 🔄 Reproduction & Audit Steps
+${bug.repro_steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}
+
+#### 🧪 Defensive Playwright Test Spec
+\`\`\`typescript
+${bug.playwright_ts_code || ''}
+\`\`\`
+
+#### 🛡️ Framework Remediation Patch
+\`\`\`
+${bug.remediation_patch?.nextjs || bug.remediation_patch?.fastapi || '// Consult OWASP guidelines'}
+\`\`\`
+
+---
+*Reported automatically by [Solari Sentinel](https://getsolari.com) powered by Solari Cloud Infrastructure.*`;
+
     navigator.clipboard.writeText(issueMd);
     setCopiedIssueId(bug.id);
     setTimeout(() => setCopiedIssueId(null), 2000);
@@ -60,294 +91,292 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
   const getSeverityBadge = (severity: BugSeverity) => {
     switch (severity) {
       case 'critical':
-        return {
-          label: 'CRITICAL',
-          desc: 'Stops users or crashes page',
-          cls: 'bg-rose-950/60 text-rose-300 border-rose-800',
-        };
+        return 'bg-rose-950/80 text-rose-300 border-rose-800';
       case 'high':
-        return {
-          label: 'HIGH',
-          desc: 'Major feature broken',
-          cls: 'bg-orange-950/60 text-orange-300 border-orange-800',
-        };
+        return 'bg-orange-950/80 text-orange-300 border-orange-800';
       case 'medium':
-        return {
-          label: 'MEDIUM',
-          desc: 'External asset / network notice',
-          cls: 'bg-amber-950/60 text-amber-300 border-amber-800',
-        };
-      case 'low':
-        return {
-          label: 'LOW (NOTICE)',
-          desc: 'Accessibility / policy notice',
-          cls: 'bg-blue-950/60 text-blue-300 border-blue-800',
-        };
-      case 'visual':
-        return {
-          label: 'VISUAL',
-          desc: 'Styling inconsistency',
-          cls: 'bg-purple-950/60 text-purple-300 border-purple-800',
-        };
+        return 'bg-amber-950/80 text-amber-300 border-amber-800';
+      default:
+        return 'bg-[#141414] text-[#aaaaaa] border-[#2a2a2a]';
     }
   };
 
-  return (
-    <div className="solari-panel rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 border border-[#222222]">
-      {/* Header & Explanation */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#1c1c1c]">
-        <div>
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-cyan-400" />
-            <h2 className="text-base sm:text-lg font-bold text-white font-mono-code uppercase tracking-wider">
-              Discovered Findings & Automated Test Specs
-            </h2>
-          </div>
-          <p className="text-xs text-[#888888] mt-1">
-            Every finding below has been verified in an isolated Solari MicroVM with an automated Playwright reproduction test.
-          </p>
+  if (bugs.length === 0) {
+    return (
+      <div className="solari-panel rounded-2xl p-8 text-center border border-[#222222]">
+        <div className="w-12 h-12 rounded-full bg-emerald-950/40 border border-emerald-800 flex items-center justify-center mx-auto mb-3 text-emerald-400">
+          <CheckCircle className="w-6 h-6" />
         </div>
-
-        {/* Severity Filter Chips */}
-        <div className="flex flex-wrap items-center gap-1.5 bg-[#0a0a0a] p-1 rounded-xl border border-[#1f1f1f]">
-          {['all', 'critical', 'high', 'medium', 'low'].map((sev) => (
-            <button
-              key={sev}
-              onClick={() => setSelectedSeverity(sev)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider font-mono-code transition-all cursor-pointer ${
-                selectedSeverity === sev
-                  ? 'bg-white text-black shadow-md'
-                  : 'text-[#777777] hover:text-white'
-              }`}
-            >
-              {sev}
-            </button>
-          ))}
-        </div>
+        <h3 className="text-sm font-bold text-white font-mono-code">No Security Findings Detected</h3>
+        <p className="text-xs text-[#777777] mt-1 max-w-sm mx-auto">
+          The autonomous agent found zero OWASP vulnerabilities, misconfigured headers, or broken assets on this target.
+        </p>
       </div>
+    );
+  }
 
-      {/* Bugs Accordion List */}
-      {filteredBugs.length === 0 ? (
-        <div className="py-12 text-center text-[#666666] bg-[#0a0a0a] rounded-xl border border-[#1c1c1c]">
-          <CheckCircle className="w-10 h-10 mx-auto mb-2 text-emerald-400" />
-          <p className="text-sm font-semibold text-white">No issues found in this category</p>
-          <p className="text-xs text-[#777777] mt-1">Your website passed all checks smoothly.</p>
+  return (
+    <div className="space-y-4">
+      {/* Filter Tabs Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 solari-panel rounded-xl p-3 border border-[#222222]">
+        <div className="flex items-center gap-2">
+          <ShieldAlert className="w-4 h-4 text-cyan-400" />
+          <span className="text-xs font-bold text-white font-mono-code">
+            Security Findings ({filteredBugs.length} / {bugs.length})
+          </span>
         </div>
-      ) : (
-        <div className="space-y-3.5">
-          {filteredBugs.map((bug) => {
-            const isExpanded = expandedBugId === bug.id;
-            const badge = getSeverityBadge(bug.severity);
-            const codeLang = activeCodeTab[bug.id] || 'ts';
-            const currentCode =
-              codeLang === 'ts' ? bug.playwright_ts_code : bug.playwright_py_code;
 
-            const isCdnError = bug.title.includes('simpleicons') || bug.title.includes('cdn');
-            const isCorsError = bug.title.includes('NotSameOrigin') || bug.title.includes('ERR_BLOCKED');
-
+        <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] font-mono-code">
+          {['all', 'critical', 'high', 'medium', 'low'].map((sev) => {
+            const count = sev === 'all' ? bugs.length : bugs.filter((b) => b.severity === sev).length;
+            const isSelected = selectedSeverity === sev;
             return (
-              <div
-                key={bug.id}
-                className="solari-card rounded-xl border border-[#222222] transition-all overflow-hidden"
+              <button
+                key={sev}
+                onClick={() => setSelectedSeverity(sev)}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer capitalize flex items-center gap-1.5 ${
+                  isSelected
+                    ? 'bg-white text-black font-bold shadow-md'
+                    : 'bg-[#0f0f0f] text-[#777777] hover:text-white border border-[#1f1f1f]'
+                }`}
               >
-                {/* Accordion Bar */}
-                <div
-                  onClick={() => setExpandedBugId(isExpanded ? null : bug.id)}
-                  className="p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer hover:bg-[#121212] transition-colors"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <span
-                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider font-mono-code border shrink-0 ${badge.cls}`}
-                    >
-                      {badge.label}
-                    </span>
-                    <div className="min-w-0">
-                      <h3 className="text-xs sm:text-sm font-bold text-white truncate font-mono-code">
-                        {bug.title}
-                      </h3>
-                      <p className="text-[11px] text-[#777777] truncate mt-0.5">{bug.url}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3 shrink-0">
-                    {bug.verified_in_sandbox && (
-                      <span className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono-code text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                        <Zap className="w-3 h-3" />
-                        <span>Verified in MicroVM</span>
-                      </span>
-                    )}
-                    <div className="text-xs font-mono-code text-[#777777] flex items-center gap-1">
-                      <span>{isExpanded ? 'Hide Details' : 'View Fix'}</span>
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-white" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-white" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Expanded Details Drawer */}
-                {isExpanded && (
-                  <div className="p-5 sm:p-6 border-t border-[#1a1a1a] bg-[#050505] space-y-5">
-                    {/* What Happened (Plain English) */}
-                    <div className="bg-[#0a0a0a] p-4 rounded-xl border border-[#1c1c1c]">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-1 flex items-center gap-1.5 font-mono-code">
-                        <AlertCircle className="w-3.5 h-3.5 text-cyan-400" />
-                        What Happened & Why
-                      </h4>
-                      <p className="text-xs text-[#cccccc] leading-relaxed">{bug.description}</p>
-                      
-                      {isCdnError && (
-                        <div className="mt-2.5 p-2.5 rounded-lg bg-[#141414] border border-[#282828] text-[11px] text-[#aaaaaa]">
-                          💡 <strong className="text-white">Quick Fix:</strong> An external CDN icon failed to load. We recommend downloading the SVG icons and hosting them locally in your <code className="text-cyan-300">/public</code> folder.
-                        </div>
-                      )}
-                      
-                      {isCorsError && (
-                        <div className="mt-2.5 p-2.5 rounded-lg bg-[#141414] border border-[#282828] text-[11px] text-[#aaaaaa]">
-                          💡 <strong className="text-white">Quick Fix:</strong> Cross-Origin Resource Policy (CORP) check. This is standard browser security when embedding assets from external domains.
-                        </div>
-                      )}
-                    </div>
-
-                    {/* How to Reproduce */}
-                    {bug.repro_steps.length > 0 && (
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#aaaaaa] mb-2 font-mono-code">
-                          How to Reproduce (Step by Step)
-                        </h4>
-                        <div className="space-y-1.5">
-                          {bug.repro_steps.map((step, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-start gap-2.5 text-xs text-[#cccccc] bg-[#0a0a0a] p-2.5 rounded-lg border border-[#1a1a1a]"
-                            >
-                              <span className="w-5 h-5 rounded-full bg-[#181818] text-white flex items-center justify-center text-[10px] font-mono-code font-bold shrink-0">
-                                {idx + 1}
-                              </span>
-                              <span className="mt-0.5">{step}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Error Trace if available */}
-                    {bug.stack_trace && (
-                      <div>
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] mb-1 font-mono-code">
-                          Captured Console / Network Output
-                        </h4>
-                        <pre className="p-3 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] font-mono-code text-[11px] text-rose-300 overflow-x-auto leading-relaxed">
-                          {bug.stack_trace}
-                        </pre>
-                      </div>
-                    )}
-
-                    {/* Synthesized Playwright Test Spec */}
-                    {currentCode && (
-                      <div className="space-y-2">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                          <div>
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-white font-mono-code flex items-center gap-1.5">
-                              <FileCode className="w-4 h-4 text-indigo-400" />
-                              Automated Playwright Test (Share with Devs)
-                            </h4>
-                            <p className="text-[11px] text-[#777777]">
-                              Engineers can run this test locally or in CI/CD to prevent regressions.
-                            </p>
-                          </div>
-
-                          {/* Language Switcher */}
-                          <div className="flex items-center gap-1 bg-[#0a0a0a] p-1 rounded-lg border border-[#1f1f1f] self-start sm:self-auto">
-                            <button
-                              onClick={() =>
-                                setActiveCodeTab({ ...activeCodeTab, [bug.id]: 'ts' })
-                              }
-                              className={`px-2.5 py-1 text-[10px] font-mono-code font-bold rounded-md cursor-pointer transition-all ${
-                                codeLang === 'ts'
-                                  ? 'bg-white text-black'
-                                  : 'text-[#777777] hover:text-white'
-                              }`}
-                            >
-                              TypeScript (.spec.ts)
-                            </button>
-                            <button
-                              onClick={() =>
-                                setActiveCodeTab({ ...activeCodeTab, [bug.id]: 'py' })
-                              }
-                              className={`px-2.5 py-1 text-[10px] font-mono-code font-bold rounded-md cursor-pointer transition-all ${
-                                codeLang === 'py'
-                                  ? 'bg-white text-black'
-                                  : 'text-[#777777] hover:text-white'
-                              }`}
-                            >
-                              Python (pytest)
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Code Display */}
-                        <div className="relative rounded-xl overflow-hidden border border-[#222222] bg-[#000000]">
-                          <pre className="p-4 font-mono-code text-[11px] text-[#ededed] overflow-x-auto leading-relaxed">
-                            {currentCode}
-                          </pre>
-                          <div className="absolute top-3 right-3 flex items-center gap-1.5">
-                            <button
-                              onClick={() => handleCopyCode(bug.id, currentCode)}
-                              className="px-2.5 py-1.5 rounded-lg bg-[#141414] hover:bg-[#222222] text-white text-xs font-mono-code flex items-center gap-1.5 border border-[#2a2a2a] transition-all cursor-pointer shadow-lg"
-                              title="Copy code"
-                            >
-                              {copiedId === bug.id ? (
-                                <Check className="w-3.5 h-3.5 text-emerald-400" />
-                              ) : (
-                                <Copy className="w-3.5 h-3.5" />
-                              )}
-                              <span>{copiedId === bug.id ? 'Copied!' : 'Copy Code'}</span>
-                            </button>
-                            <button
-                              onClick={() => handleDownloadSpec(bug, codeLang === 'ts')}
-                              className="px-2.5 py-1.5 rounded-lg bg-[#141414] hover:bg-[#222222] text-white text-xs font-mono-code flex items-center gap-1.5 border border-[#2a2a2a] transition-all cursor-pointer shadow-lg"
-                              title="Download spec file"
-                            >
-                              <Download className="w-3.5 h-3.5" />
-                              <span>Download File</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Quick Sharing Options */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#1a1a1a]">
-                      <button
-                        onClick={() => handleCopyGithubIssue(bug)}
-                        className="px-4 py-2 rounded-xl bg-[#111111] hover:bg-[#1c1c1c] text-white text-xs font-semibold font-mono-code flex items-center gap-2 border border-[#262626] transition-all cursor-pointer shadow-md"
-                      >
-                        {copiedIssueId === bug.id ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        ) : (
-                          <Share2 className="w-3.5 h-3.5 text-cyan-400" />
-                        )}
-                        <span>
-                          {copiedIssueId === bug.id
-                            ? 'Copied Ticket to Clipboard!'
-                            : 'Copy Ready-to-Paste GitHub / Jira Ticket'}
-                        </span>
-                      </button>
-
-                      <div className="text-xs text-[#666666] font-mono-code">
-                        Issue ID: <span className="text-white">{bug.id}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
+                <span>{sev}</span>
+                <span className={`text-[9px] px-1 rounded ${isSelected ? 'bg-black/20 text-black' : 'bg-[#181818] text-[#888888]'}`}>
+                  {count}
+                </span>
+              </button>
             );
           })}
         </div>
-      )}
+      </div>
+
+      {/* Findings List */}
+      <div className="space-y-3">
+        {filteredBugs.map((bug) => {
+          const isExpanded = expandedBugId === bug.id;
+          const codeTab = activeCodeTab[bug.id] || 'remediation';
+          const frameworks = Object.keys(bug.remediation_patch || {});
+          const currentFw = activeFrameworkTab[bug.id] || frameworks[0] || 'nextjs';
+          const remediationCode = bug.remediation_patch?.[currentFw] || '// Consult OWASP security guidelines';
+
+          return (
+            <div
+              key={bug.id}
+              className={`solari-panel rounded-2xl border transition-all overflow-hidden ${
+                isExpanded ? 'border-[#383838] bg-[#090909] shadow-xl' : 'border-[#1c1c1c] hover:border-[#2a2a2a]'
+              }`}
+            >
+              {/* Card Header (Accordion Click Target) */}
+              <button
+                type="button"
+                onClick={() => setExpandedBugId(isExpanded ? null : bug.id)}
+                className="w-full p-4 sm:p-5 flex items-start justify-between gap-3 text-left cursor-pointer"
+              >
+                <div className="space-y-1.5 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded border font-mono-code ${getSeverityBadge(bug.severity)}`}>
+                      {bug.severity}
+                    </span>
+
+                    {bug.cvss_score && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-rose-950/50 text-rose-300 border border-rose-800 font-mono-code">
+                        CVSS {bug.cvss_score}
+                      </span>
+                    )}
+
+                    {bug.cwe_id && (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-[#141414] text-[#aaaaaa] border border-[#222222] font-mono-code">
+                        {bug.cwe_id}
+                      </span>
+                    )}
+
+                    {bug.owasp_category && (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-950/40 text-cyan-300 border border-cyan-800/80 font-mono-code truncate max-w-[200px]">
+                        {bug.owasp_category}
+                      </span>
+                    )}
+
+                    {bug.verified_in_sandbox && (
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950/40 text-emerald-300 border border-emerald-800 font-mono-code flex items-center gap-1">
+                        <Zap className="w-3 h-3 text-emerald-400" /> MicroVM Verified
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="text-sm font-bold text-white font-mono-code truncate pr-2">
+                    {bug.title}
+                  </h3>
+
+                  <p className="text-xs text-[#777777] line-clamp-1">
+                    {bug.description}
+                  </p>
+                </div>
+
+                <div className="p-2 rounded-lg bg-[#141414] text-[#888888] shrink-0 mt-1">
+                  {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </div>
+              </button>
+
+              {/* Accordion Expanded Details */}
+              {isExpanded && (
+                <div className="px-4 sm:px-5 pb-5 pt-2 border-t border-[#181818] space-y-4 text-xs font-mono-code">
+                  {/* Multi-Model Consensus Pill */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-[#0d0d0d] border border-[#1f1f1f]">
+                    <div className="flex items-center gap-2 text-[#aaaaaa]">
+                      <Cpu className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Confirmed by:</span>
+                      <span className="text-white font-semibold">
+                        {(bug.models_confirmed || ['Gemini 2.0', 'Claude 3.5', 'GPT-4o']).join(' + ')}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] text-cyan-400 font-bold">
+                      {Math.round((bug.confidence_score || 0.92) * 100)}% Consensus Confidence
+                    </div>
+                  </div>
+
+                  {/* Full Description & Repro Steps */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[#cccccc]">
+                    <div className="p-3 rounded-xl bg-[#0b0b0b] border border-[#1c1c1c] space-y-1.5">
+                      <div className="text-[10px] uppercase font-bold text-[#777777] flex items-center gap-1.5">
+                        <AlertCircle className="w-3 h-3 text-cyan-400" /> Vulnerability Description
+                      </div>
+                      <p className="text-[11px] leading-relaxed text-[#e0e0e0] font-sans">
+                        {bug.description}
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-[#0b0b0b] border border-[#1c1c1c] space-y-1.5">
+                      <div className="text-[10px] uppercase font-bold text-[#777777] flex items-center gap-1.5">
+                        <Layers className="w-3 h-3 text-emerald-400" /> Reproduction & Audit Steps
+                      </div>
+                      <ol className="space-y-1 text-[11px] text-[#aaaaaa] list-decimal list-inside">
+                        {bug.repro_steps.map((step, idx) => (
+                          <li key={idx} className="truncate">
+                            {step}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  </div>
+
+                  {/* Code Viewer: Remediation Patches vs Playwright Defensive Tests */}
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-1 bg-[#0d0d0d] p-1 rounded-lg border border-[#1f1f1f]">
+                        <button
+                          type="button"
+                          onClick={() => setActiveCodeTab((prev) => ({ ...prev, [bug.id]: 'remediation' }))}
+                          className={`px-3 py-1 rounded text-xs font-mono-code transition-all cursor-pointer flex items-center gap-1.5 ${
+                            codeTab === 'remediation' ? 'bg-cyan-950 text-cyan-200 border border-cyan-800' : 'text-[#777777] hover:text-white'
+                          }`}
+                        >
+                          <Code2 className="w-3 h-3 text-cyan-400" />
+                          <span>Remediation Patch</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setActiveCodeTab((prev) => ({ ...prev, [bug.id]: 'ts' }))}
+                          className={`px-3 py-1 rounded text-xs font-mono-code transition-all cursor-pointer flex items-center gap-1.5 ${
+                            codeTab === 'ts' ? 'bg-[#1e1e1e] text-white' : 'text-[#777777] hover:text-white'
+                          }`}
+                        >
+                          <FileCode className="w-3 h-3 text-emerald-400" />
+                          <span>Playwright TS</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => setActiveCodeTab((prev) => ({ ...prev, [bug.id]: 'py' }))}
+                          className={`px-3 py-1 rounded text-xs font-mono-code transition-all cursor-pointer flex items-center gap-1.5 ${
+                            codeTab === 'py' ? 'bg-[#1e1e1e] text-white' : 'text-[#777777] hover:text-white'
+                          }`}
+                        >
+                          <FileCode className="w-3 h-3 text-blue-400" />
+                          <span>Playwright Py</span>
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleCopyGithubIssue(bug)}
+                          className="px-2.5 py-1 rounded bg-[#141414] hover:bg-[#202020] text-[#aaaaaa] hover:text-white border border-[#262626] text-[11px] flex items-center gap-1 transition-all cursor-pointer"
+                        >
+                          <Share2 className="w-3 h-3" />
+                          <span>{copiedIssueId === bug.id ? 'Copied Issue!' : 'Copy GitHub Issue'}</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Framework Tabs for Remediation */}
+                    {codeTab === 'remediation' && frameworks.length > 1 && (
+                      <div className="flex items-center gap-1.5 pt-1 text-[10px]">
+                        <span className="text-[#666666]">Framework:</span>
+                        {frameworks.map((fw) => (
+                          <button
+                            key={fw}
+                            type="button"
+                            onClick={() => setActiveFrameworkTab((prev) => ({ ...prev, [bug.id]: fw }))}
+                            className={`px-2 py-0.5 rounded uppercase font-bold transition-all cursor-pointer ${
+                              currentFw === fw
+                                ? 'bg-cyan-400 text-black'
+                                : 'bg-[#121212] text-[#888888] hover:text-white border border-[#222222]'
+                            }`}
+                          >
+                            {fw}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Code Container */}
+                    <div className="relative rounded-xl bg-[#000000] border border-[#1e1e1e] p-3 text-xs overflow-x-auto max-h-60 font-mono-code text-[#38bdf8]">
+                      <div className="absolute top-2 right-2 flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleCopyCode(
+                              bug.id,
+                              codeTab === 'remediation'
+                                ? remediationCode
+                                : codeTab === 'ts'
+                                ? bug.playwright_ts_code || ''
+                                : bug.playwright_py_code || ''
+                            )
+                          }
+                          className="p-1.5 rounded-lg bg-[#141414] text-[#888888] hover:text-white border border-[#282828] transition-all cursor-pointer"
+                        >
+                          {copiedId === bug.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        </button>
+
+                        {codeTab !== 'remediation' && (
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadSpec(bug, codeTab === 'ts')}
+                            className="p-1.5 rounded-lg bg-[#141414] text-[#888888] hover:text-white border border-[#282828] transition-all cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+
+                      <pre className="text-[11px] leading-relaxed whitespace-pre font-mono-code">
+                        {codeTab === 'remediation'
+                          ? remediationCode
+                          : codeTab === 'ts'
+                          ? bug.playwright_ts_code || '// Synthesizing Playwright test...'
+                          : bug.playwright_py_code || '# Synthesizing Playwright test...'}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

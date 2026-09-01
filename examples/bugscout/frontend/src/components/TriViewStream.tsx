@@ -141,6 +141,8 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
                   className={`p-3 rounded-xl border transition-all ${
                     ev.type === 'bug_detected'
                       ? 'bg-[#18080a] border-rose-800/60 text-rose-200 shadow-md'
+                      : ev.type === 'model_consensus'
+                      ? 'bg-[#0f091c] border-purple-800/50 text-purple-200 shadow-md'
                       : ev.type === 'action'
                       ? 'bg-[#0a0f1c] border-indigo-800/50 text-indigo-200'
                       : 'bg-[#0c0c0c] border-[#1f1f1f] text-[#cccccc]'
@@ -150,7 +152,11 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
                     <span className="flex items-center gap-1.5 text-[10px]">
                       {ev.type === 'bug_detected' ? (
                         <span className="px-1.5 py-0.5 rounded bg-rose-500 text-white font-bold text-[9px] flex items-center gap-1">
-                          <Bug className="w-2.5 h-2.5" /> BUG TRAPPED
+                          <Bug className="w-2.5 h-2.5" /> SECURITY FINDING
+                        </span>
+                      ) : ev.type === 'model_consensus' ? (
+                        <span className="px-1.5 py-0.5 rounded bg-purple-900/70 text-purple-300 font-semibold text-[9px] flex items-center gap-1">
+                          <Cpu className="w-2.5 h-2.5" /> AI CONSENSUS
                         </span>
                       ) : ev.type === 'action' ? (
                         <span className="px-1.5 py-0.5 rounded bg-indigo-900/60 text-indigo-300 font-semibold text-[9px] flex items-center gap-1">
@@ -158,7 +164,7 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
                         </span>
                       ) : (
                         <span className="px-1.5 py-0.5 rounded bg-[#1a1a1a] text-[#888888] text-[9px]">
-                          THOUGHT
+                          REASONING
                         </span>
                       )}
                       <span className="uppercase text-[#666666] text-[9px]">
