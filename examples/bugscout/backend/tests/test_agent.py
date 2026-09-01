@@ -1,5 +1,6 @@
 import pytest
-from app.models.schemas import AuditRequest, DiscoveredBug, AgentEvent, QAReport
+
+from app.models.schemas import AuditRequest, DiscoveredBug
 from app.services.test_synthesizer import test_synthesizer
 
 

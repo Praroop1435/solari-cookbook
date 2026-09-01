@@ -1,7 +1,12 @@
 import logging
-from typing import Optional, Tuple
+
 from ..config import settings
 from ..models.schemas import DiscoveredBug
+
+try:
+    from google import genai
+except ImportError:
+    genai = None
 
 logger = logging.getLogger(__name__)
 
@@ -11,14 +16,13 @@ class TestSynthesizer:
 
     def __init__(self):
         self.gemini_client = None
-        if settings.gemini_api_key:
+        if settings.gemini_api_key and genai:
             try:
-                from google import genai
                 self.gemini_client = genai.Client(api_key=settings.gemini_api_key)
             except Exception as e:
                 logger.warning(f"Could not initialize Gemini client: {e}")
 
-    async def synthesize(self, bug: DiscoveredBug) -> Tuple[str, str]:
+    async def synthesize(self, bug: DiscoveredBug) -> tuple[str, str]:
         """Returns (playwright_ts_code, playwright_py_code)."""
         ts_code = self._generate_ts_template(bug)
         py_code = self._generate_py_template(bug)
@@ -32,8 +36,8 @@ Bug Title: {bug.title}
 Category: {bug.category}
 Target URL: {bug.url}
 Description: {bug.description}
-Stack Trace / Error: {bug.stack_trace or 'N/A'}
-HTTP Status: {bug.status_code or 'N/A'}
+Stack Trace / Error: {bug.stack_trace or "N/A"}
+HTTP Status: {bug.status_code or "N/A"}
 Reproduction Steps:
 {chr(10).join(f"- {step}" for step in bug.repro_steps)}
 

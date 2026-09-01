@@ -1,7 +1,7 @@
-from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
 import os
-from typing import Optional
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -11,7 +11,7 @@ class Settings(BaseSettings):
     debug: bool = True
 
     # Solari Cloud Platform
-    solari_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("SOLARI_API_KEY"))
+    solari_api_key: str | None = Field(default_factory=lambda: os.getenv("SOLARI_API_KEY"))
     solari_base_url: str = Field(default="https://api.getsolari.com")
     solari_browser_stealth: bool = True
     solari_browser_proxy: str = "us"
@@ -19,10 +19,12 @@ class Settings(BaseSettings):
     solari_sandbox_timeout_ms: int = 5 * 60_000
 
     # LLM Settings (Google Gemini / OpenAI / Anthropic)
-    gemini_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
+    gemini_api_key: str | None = Field(
+        default_factory=lambda: os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    )
     gemini_model: str = Field(default="gemini-2.0-flash-lite")
-    openai_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
-    anthropic_api_key: Optional[str] = Field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY"))
+    openai_api_key: str | None = Field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
+    anthropic_api_key: str | None = Field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY"))
 
     # Server settings
     host: str = "0.0.0.0"

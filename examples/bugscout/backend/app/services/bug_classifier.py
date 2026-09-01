@@ -1,5 +1,5 @@
-import re
-from typing import Optional, Literal
+from typing import Literal
+
 from ..models.schemas import DiscoveredBug
 
 
@@ -8,9 +8,11 @@ class BugClassifier:
 
     def classify_severity(
         self,
-        category: Literal["console_error", "network_error", "broken_asset", "dom_anomaly", "accessibility"],
+        category: Literal[
+            "console_error", "network_error", "broken_asset", "dom_anomaly", "accessibility"
+        ],
         error_message: str,
-        status_code: Optional[int] = None,
+        status_code: int | None = None,
     ) -> Literal["critical", "high", "medium", "low", "visual"]:
         msg = error_message.lower()
 
@@ -18,7 +20,10 @@ class BugClassifier:
             return "critical"
 
         if category == "console_error":
-            if any(term in msg for term in ["typeerror", "referenceerror", "syntaxerror", "uncaught", "fatal"]):
+            if any(
+                term in msg
+                for term in ["typeerror", "referenceerror", "syntaxerror", "uncaught", "fatal"]
+            ):
                 return "critical"
             if any(term in msg for term in ["warning", "deprecated"]):
                 return "low"
@@ -48,7 +53,7 @@ class BugClassifier:
 
     def format_github_issue(self, bug: DiscoveredBug) -> str:
         """Generates a pre-formatted GitHub Issue / Jira ticket markdown."""
-        repro_list = "\n".join(f"{i+1}. {step}" for i, step in enumerate(bug.repro_steps))
+        repro_list = "\n".join(f"{i + 1}. {step}" for i, step in enumerate(bug.repro_steps))
         stack = f"```\n{bug.stack_trace}\n```" if bug.stack_trace else "_No stack trace captured._"
         code_block = (
             f"```typescript\n{bug.playwright_ts_code}\n```"
@@ -59,7 +64,7 @@ class BugClassifier:
         return f"""### 🚨 [BugScout QA] {bug.title}
 
 **Severity**: `{bug.severity.upper()}` | **Category**: `{bug.category}` | **Target URL**: {bug.url}
-**Sandbox Verified**: `{'✅ YES' if bug.verified_in_sandbox else '❌ NO'}`
+**Sandbox Verified**: `{"✅ YES" if bug.verified_in_sandbox else "❌ NO"}`
 
 ---
 

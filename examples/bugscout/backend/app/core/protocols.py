@@ -1,5 +1,7 @@
-from typing import Protocol, AsyncGenerator, Dict, Any, Tuple, Optional
-from ..models.schemas import DiscoveredBug, AuditRequest, AgentEvent, QAReport
+from collections.abc import AsyncGenerator
+from typing import Any, Protocol
+
+from ..models.schemas import AgentEvent, AuditRequest, DiscoveredBug
 
 
 class BrowserDriverProtocol(Protocol):
@@ -9,8 +11,7 @@ class BrowserDriverProtocol(Protocol):
         self,
         request: AuditRequest,
         session_id: str,
-    ) -> AsyncGenerator[AgentEvent, None]:
-        ...
+    ) -> AsyncGenerator[AgentEvent]: ...
 
 
 class SandboxRunnerProtocol(Protocol):
@@ -20,19 +21,18 @@ class SandboxRunnerProtocol(Protocol):
         self,
         bug: DiscoveredBug,
         py_test_code: str,
-    ) -> AsyncGenerator[Dict[str, Any], None]:
-        ...
+    ) -> AsyncGenerator[dict[str, Any]]: ...
 
 
 class TestSynthesizerProtocol(Protocol):
     """Abstraction for generating multi-language Playwright test suites."""
 
-    async def synthesize(self, bug: DiscoveredBug) -> Tuple[str, str]:
-        ...
+    async def synthesize(self, bug: DiscoveredBug) -> tuple[str, str]: ...
 
 
 class BugClassifierProtocol(Protocol):
     """Abstraction for categorizing and scoring discovered anomalies."""
 
-    def classify_severity(self, category: str, error_message: str, status_code: Optional[int]) -> str:
-        ...
+    def classify_severity(
+        self, category: str, error_message: str, status_code: int | None
+    ) -> str: ...

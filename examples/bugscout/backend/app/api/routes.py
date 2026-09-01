@@ -1,20 +1,25 @@
-import json
-import uuid
 import asyncio
+import json
 import logging
-from fastapi import APIRouter, HTTPException, Response
-from fastapi.responses import StreamingResponse, HTMLResponse
-from typing import Dict
+import uuid
 
-from ..models.schemas import AuditRequest, QAReport, AgentEvent
-from ..services.browser_agent import browser_agent
+from fastapi import APIRouter, HTTPException, Response
+from fastapi.responses import HTMLResponse, StreamingResponse
+
 from ..config import settings
+from ..models.schemas import AgentEvent, AuditRequest
+from ..services.browser_agent import browser_agent
+
+try:
+    from solari_browser import Solari
+except ImportError:
+    Solari = None
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")
 
 # In-memory storage for active audit jobs
-audit_jobs: Dict[str, AuditRequest] = {}
+audit_jobs: dict[str, AuditRequest] = {}
 
 
 @router.get("/health")
@@ -23,8 +28,12 @@ async def health_check():
         "app": settings.app_name,
         "version": settings.app_version,
         "status": "healthy",
-        "solari_configured": bool(settings.solari_api_key and not settings.solari_api_key.startswith("slr_live_your_")),
-        "gemini_configured": bool(settings.gemini_api_key and not settings.gemini_api_key.startswith("AIzaSy_your_")),
+        "solari_configured": bool(
+            settings.solari_api_key and not settings.solari_api_key.startswith("slr_live_your_")
+        ),
+        "gemini_configured": bool(
+            settings.gemini_api_key and not settings.gemini_api_key.startswith("AIzaSy_your_")
+        ),
     }
 
 
@@ -42,7 +51,6 @@ async def start_audit(request: AuditRequest):
 @router.get("/audit/stream/{session_id}")
 async def stream_audit(session_id: str):
     if session_id not in audit_jobs:
-        # Provide default audit request if stream initiated directly
         audit_jobs[session_id] = AuditRequest(
             target_url="https://news.ycombinator.com",
             test_scope="Full Smoke Test & Anomaly Discovery",
@@ -87,17 +95,17 @@ async def get_report(session_id: str):
 @router.get("/audit/recording/{session_id}")
 async def get_session_recording(session_id: str):
     """Authenticated proxy for Solari Browser session replay."""
-    if not settings.solari_api_key or settings.solari_api_key.startswith("slr_live_your_"):
+    if (
+        not settings.solari_api_key
+        or settings.solari_api_key.startswith("slr_live_your_")
+        or not Solari
+    ):
         raise HTTPException(status_code=400, detail="Solari API Key not configured")
 
     try:
-        from solari_browser import Solari
         solari = Solari(api_key=settings.solari_api_key)
-        
-        # Download replay from Solari Cloud API with credentials
         blob = await solari.sessions.download_replay(session_id)
-        
-        # Return as NDJSON download
+
         return Response(
             content=blob,
             media_type="application/x-ndjson",
@@ -108,7 +116,6 @@ async def get_session_recording(session_id: str):
         )
     except Exception as e:
         logger.info(f"Replay retrieval note for {session_id}: {e}")
-        # Return helpful status page if replay is still encoding in Solari Cloud
         html_content = f"""
         <!DOCTYPE html>
         <html>

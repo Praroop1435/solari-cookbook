@@ -1,6 +1,4 @@
-from app.models.schemas import AuditRequest, DiscoveredBug, AgentEvent, QAReport
-import pytest
-from pydantic import ValidationError
+from app.models.schemas import AuditRequest, DiscoveredBug, QAReport
 
 
 def test_audit_request_defaults():

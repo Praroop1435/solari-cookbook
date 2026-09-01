@@ -1,5 +1,5 @@
-from app.services.bug_classifier import bug_classifier
 from app.models.schemas import DiscoveredBug
+from app.services.bug_classifier import bug_classifier
 
 
 def test_classify_500_error_as_critical():

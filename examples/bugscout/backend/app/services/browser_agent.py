@@ -2,17 +2,24 @@ import asyncio
 import base64
 import logging
 import uuid
-import httpx
-from urllib.parse import urlparse
 from collections import defaultdict
-from datetime import datetime, timezone
-from typing import AsyncGenerator, List, Dict, Any, Set
+from collections.abc import AsyncGenerator
+from datetime import UTC, datetime
+from typing import Any
+from urllib.parse import urlparse
+
+import httpx
 from bs4 import BeautifulSoup
 
 from ..config import settings
-from ..models.schemas import AuditRequest, AgentEvent, DiscoveredBug, QAReport
-from .test_synthesizer import test_synthesizer
+from ..models.schemas import AgentEvent, AuditRequest, DiscoveredBug, QAReport
 from .sandbox_runner import sandbox_runner
+from .test_synthesizer import test_synthesizer
+
+try:
+    from solari_browser import Solari
+except ImportError:
+    Solari = None
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +35,14 @@ class BrowserAgent:
     """Autonomous QA & Anomaly Discovery Agent powered by Solari Stealth Cloud Browsers."""
 
     def __init__(self):
-        self.active_reports: Dict[str, QAReport] = {}
+        self.active_reports: dict[str, QAReport] = {}
 
     async def run_audit(
         self,
         request: AuditRequest,
         session_id: str,
-    ) -> AsyncGenerator[AgentEvent, None]:
-        discovered_bugs: List[DiscoveredBug] = []
+    ) -> AsyncGenerator[AgentEvent]:
+        discovered_bugs: list[DiscoveredBug] = []
         pages_visited = 1
         requests_analyzed = 0
         recording_session_id = f"slr_rec_{uuid.uuid4().hex[:8]}"
@@ -53,18 +60,21 @@ class BrowserAgent:
             session_id=session_id,
             type="action",
             stage="initialization",
-            message=f"Launching Solari Stealth Cloud Browser (US Residential Proxy, session_recording=True)...",
+            message="Launching Solari Stealth Cloud Browser (US Residential Proxy, session_recording=True)...",
             data={"proxy": "us-residential", "recording": True},
         )
 
         solari_browser = None
         page = None
 
-        if settings.solari_api_key and not settings.solari_api_key.startswith("slr_live_your_"):
+        if (
+            settings.solari_api_key
+            and not settings.solari_api_key.startswith("slr_live_your_")
+            and Solari
+        ):
             try:
-                from solari_browser import Solari
                 solari = Solari(api_key=settings.solari_api_key)
-                launch_kwargs = {"recording": True}
+                launch_kwargs: dict[str, Any] = {"recording": True}
                 if request.profile_id:
                     launch_kwargs["profile_id"] = request.profile_id
 
@@ -80,28 +90,41 @@ class BrowserAgent:
                 )
 
                 # Raw event accumulators
-                raw_console_errors: List[str] = []
-                raw_failed_requests: List[Dict[str, Any]] = []
+                raw_console_errors: list[str] = []
+                raw_failed_requests: list[dict[str, Any]] = []
 
-                page.on("console", lambda msg: raw_console_errors.append(msg.text) if msg.type == "error" else None)
+                page.on(
+                    "console",
+                    lambda msg: (
+                        raw_console_errors.append(msg.text) if msg.type == "error" else None
+                    ),
+                )
                 page.on("pageerror", lambda err: raw_console_errors.append(str(err)))
                 page.on(
                     "requestfailed",
-                    lambda req: raw_failed_requests.append({
-                        "url": req.url,
-                        "method": req.method,
-                        "failure": req.failure or "Failed to load",
-                        "status": 0,
-                    })
+                    lambda req: raw_failed_requests.append(
+                        {
+                            "url": req.url,
+                            "method": req.method,
+                            "failure": req.failure or "Failed to load",
+                            "status": 0,
+                        }
+                    ),
                 )
                 page.on(
                     "response",
-                    lambda res: raw_failed_requests.append({
-                        "url": res.url,
-                        "method": res.request.method if hasattr(res, "request") else "GET",
-                        "failure": f"HTTP {res.status}",
-                        "status": res.status,
-                    }) if res.status >= 400 else None
+                    lambda res: (
+                        raw_failed_requests.append(
+                            {
+                                "url": res.url,
+                                "method": res.request.method if hasattr(res, "request") else "GET",
+                                "failure": f"HTTP {res.status}",
+                                "status": res.status,
+                            }
+                        )
+                        if res.status >= 400
+                        else None
+                    ),
                 )
 
                 await page.goto(request.target_url, wait_until="load", timeout=30000)
@@ -118,11 +141,15 @@ class BrowserAgent:
                     try:
                         pass_input = page.locator('input[type="password"]')
                         if await pass_input.count() > 0:
-                            user_input = page.locator('input[type="email"], input[name="username"], input[name="email"], input[type="text"]').first
+                            user_input = page.locator(
+                                'input[type="email"], input[name="username"], input[name="email"], input[type="text"]'
+                            ).first
                             if await user_input.count() > 0:
                                 await user_input.fill(request.auth_username)
                                 await pass_input.first.fill(request.auth_password)
-                                submit_btn = page.locator('button[type="submit"], input[type="submit"], button:has-text("Log in"), button:has-text("Sign in")').first
+                                submit_btn = page.locator(
+                                    'button[type="submit"], input[type="submit"], button:has-text("Log in"), button:has-text("Sign in")'
+                                ).first
                                 if await submit_btn.count() > 0:
                                     await submit_btn.click()
                                     await asyncio.sleep(2.5)
@@ -130,7 +157,7 @@ class BrowserAgent:
                                         session_id=session_id,
                                         type="thought",
                                         stage="browser_crawling",
-                                        message=f"✅ Logged in successfully! Navigating authenticated dashboard routes on {page.url}...",
+                                        message=f"✅ Logged in successfully! Navigating dashboard on {page.url}...",
                                     )
                     except Exception as auth_err:
                         logger.info(f"Auto-login flow note: {auth_err}")
@@ -140,28 +167,39 @@ class BrowserAgent:
 
                 # Capture real screenshot
                 screenshot_bytes = await page.screenshot(type="png")
-                b64_screenshot = f"data:image/png;base64,{base64.b64encode(screenshot_bytes).decode('utf-8')}"
+                b64_screenshot = (
+                    f"data:image/png;base64,{base64.b64encode(screenshot_bytes).decode('utf-8')}"
+                )
 
                 yield AgentEvent(
                     session_id=session_id,
                     type="browser_screenshot",
                     stage="browser_crawling",
                     message=f"Rendered live viewport for {request.target_url}",
-                    data={"screenshot": b64_screenshot, "url": request.target_url, "title": await page.title()},
+                    data={
+                        "screenshot": b64_screenshot,
+                        "url": request.target_url,
+                        "title": await page.title(),
+                    },
                 )
 
                 # ----------------------------------------------------
                 # INTELLIGENT CLUSTERING & NOISE FILTERING
                 # ----------------------------------------------------
 
-                # 1. Filter and Process Real JavaScript Exceptions (first-party & critical)
-                seen_console_sigs: Set[str] = set()
+                # 1. Filter and Process Real JavaScript Exceptions
+                seen_console_sigs: set[str] = set()
                 for err in raw_console_errors:
-                    # Ignore harmless noise & benign browser cancellations
-                    if any(noise in err.lower() for noise in ["favicon.ico", "net::err_aborted", "download the react devtools"]):
+                    if any(
+                        noise in err.lower()
+                        for noise in [
+                            "favicon.ico",
+                            "net::err_aborted",
+                            "download the react devtools",
+                        ]
+                    ):
                         continue
 
-                    # If it is a generic CORS/CORP warning, we handle it grouped under network/asset check below
                     if "NotSameOrigin" in err or "ERR_BLOCKED_BY_RESPONSE" in err:
                         continue
 
@@ -170,7 +208,16 @@ class BrowserAgent:
                         continue
                     seen_console_sigs.add(err_sig)
 
-                    is_critical = any(k in err for k in ["TypeError", "ReferenceError", "SyntaxError", "Uncaught", "UnhandledPromiseRejection"])
+                    is_critical = any(
+                        k in err
+                        for k in [
+                            "TypeError",
+                            "ReferenceError",
+                            "SyntaxError",
+                            "Uncaught",
+                            "UnhandledPromiseRejection",
+                        ]
+                    )
                     severity = "critical" if is_critical else "medium"
 
                     bug = DiscoveredBug(
@@ -197,10 +244,9 @@ class BrowserAgent:
                     )
 
                 # 2. Cluster Third-Party vs First-Party Network & CORS Failures
-                domain_failures: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+                domain_failures: dict[str, list[dict[str, Any]]] = defaultdict(list)
                 for req in raw_failed_requests:
                     req_url = req["url"]
-                    # Ignore favicon and analytics noise
                     if "favicon.ico" in req_url or "google-analytics" in req_url:
                         continue
 
@@ -208,15 +254,16 @@ class BrowserAgent:
                     domain_failures[domain].append(req)
 
                 for domain, fails in domain_failures.items():
-                    is_third_party = domain and domain != target_domain and not domain.endswith(f".{target_domain}")
-                    
+                    is_third_party = (
+                        domain
+                        and domain != target_domain
+                        and not domain.endswith(f".{target_domain}")
+                    )
+
                     if is_third_party:
-                        # Cluster all failures from this third party (e.g. cdn.simpleicons.org) into ONE single clear notice
                         sample_paths = [urlparse(f["url"]).path for f in fails[:4]]
                         paths_str = ", ".join(sample_paths) if sample_paths else domain
-                        
-                        is_cors = any("blocked" in str(f.get("failure", "")).lower() or "cors" in str(f.get("failure", "")).lower() or f.get("status") == 0 for f in fails)
-                        
+
                         bug = DiscoveredBug(
                             id=f"bug-{uuid.uuid4().hex[:6]}",
                             title=f"Third-Party Asset Notice: {len(fails)} asset(s) blocked from {domain}",
@@ -227,9 +274,12 @@ class BrowserAgent:
                             description=(
                                 f"{len(fails)} external asset request(s) to '{domain}' were blocked by browser Cross-Origin Resource Policy (CORP/CORS). "
                                 f"Assets: {paths_str}. "
-                                f"Recommendation: Host these assets locally in your project's /public directory."
+                                "Recommendation: Host these assets locally in your project's /public directory."
                             ),
-                            stack_trace=f"Blocked requests to {domain}:\n" + "\n".join([f"- {f['method']} {f['url']} ({f['failure']})" for f in fails[:5]]),
+                            stack_trace=f"Blocked requests to {domain}:\n"
+                            + "\n".join(
+                                [f"- {f['method']} {f['url']} ({f['failure']})" for f in fails[:5]]
+                            ),
                             repro_steps=[
                                 f"Navigate to {request.target_url}",
                                 f"Inspect network requests to external host '{domain}'",
@@ -245,7 +295,6 @@ class BrowserAgent:
                             data=bug.model_dump(),
                         )
                     else:
-                        # First-party failures (e.g. your actual backend API returned 500 or 404)
                         for f in fails[:2]:
                             status = f.get("status", 500)
                             is_server_crash = status >= 500
@@ -287,7 +336,7 @@ class BrowserAgent:
             session_id=session_id,
             type="action",
             stage="browser_crawling",
-            message=f"Inspecting DOM accessibility, layout tags, and broken links...",
+            message="Inspecting DOM accessibility, layout tags, and broken links...",
         )
         await asyncio.sleep(0.5)
 
@@ -298,7 +347,6 @@ class BrowserAgent:
                 pages_visited += 1
                 requests_analyzed += 14
 
-                # Check missing alt attributes on first-party images
                 images = soup.find_all("img")
                 for img in images:
                     src = img.get("src")
@@ -307,12 +355,15 @@ class BrowserAgent:
                     if not img.get("alt"):
                         bug = DiscoveredBug(
                             id=f"bug-{uuid.uuid4().hex[:6]}",
-                            title=f"Accessibility Warning: Missing alt attribute on <img>",
+                            title="Accessibility Warning: Missing alt attribute on <img>",
                             severity="low",
                             category="accessibility",
                             url=request.target_url,
                             description=f"Image <img src='{src[:40]}...'> is missing an 'alt' descriptive label, which affects screen readers (WCAG 2.1).",
-                            repro_steps=[f"Navigate to {request.target_url}", f"Inspect image with src '{src[:40]}'"],
+                            repro_steps=[
+                                f"Navigate to {request.target_url}",
+                                f"Inspect image with src '{src[:40]}'",
+                            ],
                         )
                         discovered_bugs.append(bug)
                         yield AgentEvent(
@@ -327,7 +378,7 @@ class BrowserAgent:
             except Exception as e:
                 logger.warning(f"HTTP inspection note: {e}")
 
-        # Phase 3: Playwright Test Synthesis & Solari MicroVM Sandbox Execution for real bugs
+        # Phase 3: Playwright Test Synthesis & Solari MicroVM Sandbox Execution
         verified_count = 0
         if discovered_bugs:
             for i, bug in enumerate(discovered_bugs[:2]):
@@ -335,7 +386,7 @@ class BrowserAgent:
                     session_id=session_id,
                     type="thought",
                     stage="test_synthesis",
-                    message=f"Synthesizing Playwright test script for Finding #{i+1}: '{bug.title}'...",
+                    message=f"Synthesizing Playwright test script for Finding #{i + 1}: '{bug.title}'...",
                 )
 
                 ts_code, py_code = await test_synthesizer.synthesize(bug)
@@ -346,11 +397,10 @@ class BrowserAgent:
                     session_id=session_id,
                     type="action",
                     stage="sandbox_verification",
-                    message=f"Spawning Solari MicroVM Sandbox to execute synthesized Playwright test...",
+                    message="Spawning Solari MicroVM Sandbox to execute synthesized Playwright test...",
                     data={"bug_id": bug.id, "playwright_ts": ts_code, "playwright_py": py_code},
                 )
 
-                # Stream sandbox logs live
                 sandbox_log_lines = []
                 async for log_event in sandbox_runner.verify_test_in_sandbox(bug, py_code):
                     sandbox_log_lines.append(log_event["message"])
@@ -373,21 +423,20 @@ class BrowserAgent:
                 message=f"✨ Zero errors detected on {request.target_url}! Website passed all checks.",
             )
 
-        # Clean up browser session
         if solari_browser:
             try:
                 await solari_browser.close()
             except Exception as e:
                 logger.warning(f"Error closing browser: {e}")
 
-        # Compute Realistic, High-Signal Quality Score
         critical_count = sum(1 for b in discovered_bugs if b.severity == "critical")
         high_count = sum(1 for b in discovered_bugs if b.severity == "high")
         med_count = sum(1 for b in discovered_bugs if b.severity == "medium")
         low_count = sum(1 for b in discovered_bugs if b.severity in ["low", "visual"])
 
-        # Low/external notices only deduct 2% each so healthy websites stay Grade A
-        health = max(40, 100 - (critical_count * 30 + high_count * 15 + med_count * 8 + low_count * 2))
+        health = max(
+            40, 100 - (critical_count * 30 + high_count * 15 + med_count * 8 + low_count * 2)
+        )
 
         if len(discovered_bugs) == 0:
             score = "A+"
@@ -419,7 +468,7 @@ class BrowserAgent:
             bugs=discovered_bugs,
             session_recording_url=f"/api/audit/recording/{recording_session_id}",
             sandbox_verified_count=verified_count,
-            created_at=datetime.now(timezone.utc).isoformat(),
+            created_at=datetime.now(UTC).isoformat(),
         )
 
         self.active_reports[session_id] = qa_report
