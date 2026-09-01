@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "BugScout AI"
+    app_name: str = "Solari Sentinel"
     app_version: str = "1.0.0"
     app_env: str = "development"
     debug: bool = True

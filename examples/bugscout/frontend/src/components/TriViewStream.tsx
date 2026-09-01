@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import React, { useRef, useEffect, useState } from 'react';
-import { Sparkles, ShieldAlert, Bug, Globe, Play, Cpu, Maximize2 } from 'lucide-react';
+import { Activity, ShieldAlert, Bug, Globe, Play, Cpu, Maximize2 } from 'lucide-react';
 import { AgentEvent, DiscoveredBug } from '../types';
 
 interface TriViewStreamProps {
@@ -44,7 +44,7 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
             <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
             <div>
               <div className="text-xs font-bold text-white font-mono-code flex items-center gap-2">
-                <span>AI Live Audit In Progress</span>
+                <span>Autonomous Audit In Progress</span>
                 <span className="text-[#888888]">({events.length} actions executed)</span>
               </div>
               <p className="text-[11px] text-[#777777]">
@@ -110,12 +110,12 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
         >
           <div className="flex items-center justify-between pb-3 border-b border-[#1c1c1c]">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-white" />
+              <Activity className="w-4 h-4 text-white" />
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-white font-mono-code">
-                  1. AI Thinking & Actions
+                  1. Live Agent Reasoning
                 </h3>
-                <p className="text-[10px] text-[#666666]">Live step-by-step decision trail</p>
+                <p className="text-[10px] text-[#666666]">Step-by-step decision trail</p>
               </div>
             </div>
             <span className="text-[10px] px-2 py-0.5 rounded bg-[#141414] text-[#888888] font-mono-code border border-[#222222]">
@@ -127,9 +127,9 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
             {!hasStarted ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-[#555555]">
                 <div className="w-10 h-10 rounded-full bg-[#111111] flex items-center justify-center mb-3 text-white">
-                  <Sparkles className="w-5 h-5" />
+                  <Activity className="w-5 h-5" />
                 </div>
-                <h4 className="text-xs font-semibold text-white mb-1">Ready to explore</h4>
+                <h4 className="text-xs font-semibold text-white mb-1">Agent Standing By</h4>
                 <p className="text-[11px] text-[#666666] max-w-xs">
                   Click &ldquo;Run AI Audit&rdquo; or select a demo above to watch the agent analyze your site in real time.
                 </p>

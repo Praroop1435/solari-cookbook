@@ -141,7 +141,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-[#141414] bg-[#000000] py-6 text-center text-xs font-mono-code text-[#555555]">
         <p>
-          BugScout AI — Built with{' '}
+          Solari Sentinel — Built natively with{' '}
           <a
             href="https://getsolari.com"
             target="_blank"

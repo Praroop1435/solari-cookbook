@@ -266,9 +266,9 @@ export const AuditConfig: React.FC<AuditConfigProps> = ({ onStartAudit, isLoadin
                           Solari Persistent Profiles
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#777777] mt-0.5">
-                        Test dashboards, user settings, or admin portals behind a login wall.
-                      </p>
+                      <p className="text-xs text-[#888888] mt-1">
+            Give Solari Sentinel any live URL. The agent autonomously explores user flows, traps runtime bugs, writes Playwright tests, and verifies them inside isolated Solari MicroVMs.
+          </p>
                     </div>
                   </div>
                   <input

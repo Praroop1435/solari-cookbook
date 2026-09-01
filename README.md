@@ -12,11 +12,11 @@ Every example in this repo is a complete program you can run in under a minute. 
 
 ---
 
-## 🌟 Flagship Full-Stack Agent: BugScout AI
+## 🌟 Flagship Full-Stack Agent: Solari Sentinel
 
 | Application | Stack | What it does |
 | :--- | :--- | :--- |
-| [**BugScout AI**](examples/bugscout) | Python (FastAPI) + Next.js 16 | **Autonomous Self-Healing QA & Bug Discovery Agent**: Stealth cloud browser anomaly trapping (CDP console exceptions, 4xx/5xx network failures), automated Playwright test synthesis, live Solari MicroVM Sandbox test verification, authenticated session video replays, and persistent auth profiles. |
+| [**Solari Sentinel**](examples/bugscout) | Python (FastAPI) + Next.js 16 | **Autonomous Self-Healing QA & Bug Discovery Agent**: Stealth cloud browser anomaly trapping (CDP console exceptions, 4xx/5xx network failures), automated Playwright test synthesis, live Solari MicroVM Sandbox test verification, authenticated session video replays, and persistent auth profiles. |
 
 ---
 

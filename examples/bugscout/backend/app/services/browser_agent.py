@@ -52,7 +52,7 @@ class BrowserAgent:
             session_id=session_id,
             type="thought",
             stage="initialization",
-            message=f"Initializing BugScout autonomous QA audit for target URL: {request.target_url}",
+            message=f"Initializing Solari Sentinel autonomous QA audit for target URL: {request.target_url}",
             data={"test_scope": request.test_scope, "stealth": request.stealth_mode},
         )
 

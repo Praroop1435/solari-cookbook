@@ -51,7 +51,7 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
   };
 
   const handleCopyGithubIssue = (bug: DiscoveredBug) => {
-    const issueMd = `### 🚨 [BugScout QA] ${bug.title}\n\n**Severity**: \`${bug.severity.toUpperCase()}\` | **Category**: \`${bug.category}\` | **Target URL**: ${bug.url}\n**Sandbox Verified**: ${bug.verified_in_sandbox ? '✅ YES' : '❌ NO'}\n\n---\n\n#### 📋 Description\n${bug.description}\n\n#### 🔄 Reproduction Steps\n${bug.repro_steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n#### 💥 Stack Trace / Network Response\n\`\`\`\n${bug.stack_trace || 'N/A'}\n\`\`\`\n\n#### 🧪 Synthesized Playwright Test Spec\n\`\`\`typescript\n${bug.playwright_ts_code || ''}\n\`\`\`\n\n---\n*Reported automatically by [BugScout AI](https://getsolari.com) powered by Solari Cloud Infrastructure.*`;
+    const issueMd = `### 🚨 [Solari Sentinel QA] ${bug.title}\n\n**Severity**: \`${bug.severity.toUpperCase()}\` | **Category**: \`${bug.category}\` | **Target URL**: ${bug.url}\n**Sandbox Verified**: ${bug.verified_in_sandbox ? '✅ YES' : '❌ NO'}\n\n---\n\n#### 📋 Description\n${bug.description}\n\n#### 🔄 Reproduction Steps\n${bug.repro_steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n#### 💥 Stack Trace / Network Response\n\`\`\`\n${bug.stack_trace || 'N/A'}\n\`\`\`\n\n#### 🧪 Synthesized Playwright Test Spec\n\`\`\`typescript\n${bug.playwright_ts_code || ''}\n\`\`\`\n\n---\n*Reported automatically by [Solari Sentinel](https://getsolari.com) powered by Solari Cloud Infrastructure.*`;
     navigator.clipboard.writeText(issueMd);
     setCopiedIssueId(bug.id);
     setTimeout(() => setCopiedIssueId(null), 2000);

@@ -2,9 +2,14 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'BugScout AI — Autonomous Self-Healing QA & Bug Discovery (Solari)',
+  title: 'Solari Sentinel — Autonomous QA & Self-Healing Bug Discovery',
   description:
-    'Autonomous QA & Visual Regression Agent powered by Solari Cloud Browsers and MicroVM Sandboxes. Synthesizes and executes reproducible Playwright test suites.',
+    'Enterprise-grade autonomous QA agent powered by Solari Cloud Infrastructure (Stealth Browsers, MicroVM Sandboxes, and Session Recordings).',
+  icons: {
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
