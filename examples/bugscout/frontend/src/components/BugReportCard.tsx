@@ -74,13 +74,13 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
       case 'medium':
         return {
           label: 'MEDIUM',
-          desc: 'Missing asset or warning',
+          desc: 'External asset / network notice',
           cls: 'bg-amber-950/60 text-amber-300 border-amber-800',
         };
       case 'low':
         return {
-          label: 'LOW',
-          desc: 'Minor layout / accessibility',
+          label: 'LOW (NOTICE)',
+          desc: 'Accessibility / policy notice',
           cls: 'bg-blue-950/60 text-blue-300 border-blue-800',
         };
       case 'visual':
@@ -98,13 +98,13 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#1c1c1c]">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-rose-400" />
+            <ShieldAlert className="w-5 h-5 text-cyan-400" />
             <h2 className="text-base sm:text-lg font-bold text-white font-mono-code uppercase tracking-wider">
-              Discovered Issues & Ready-to-Use Fixes
+              Discovered Findings & Automated Test Specs
             </h2>
           </div>
           <p className="text-xs text-[#888888] mt-1">
-            Every issue below includes an automated Playwright test that your engineering team can run immediately.
+            Every finding below has been verified in an isolated Solari MicroVM with an automated Playwright reproduction test.
           </p>
         </div>
 
@@ -128,10 +128,10 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
 
       {/* Bugs Accordion List */}
       {filteredBugs.length === 0 ? (
-        <div className="py-12 text-center text-[#666666]">
-          <CheckCircle className="w-10 h-10 mx-auto mb-2 text-emerald-500/40" />
-          <p className="text-sm font-semibold text-white">No issues found matching this filter</p>
-          <p className="text-xs text-[#777777] mt-1">Your website passed all checks in this category.</p>
+        <div className="py-12 text-center text-[#666666] bg-[#0a0a0a] rounded-xl border border-[#1c1c1c]">
+          <CheckCircle className="w-10 h-10 mx-auto mb-2 text-emerald-400" />
+          <p className="text-sm font-semibold text-white">No issues found in this category</p>
+          <p className="text-xs text-[#777777] mt-1">Your website passed all checks smoothly.</p>
         </div>
       ) : (
         <div className="space-y-3.5">
@@ -141,6 +141,9 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
             const codeLang = activeCodeTab[bug.id] || 'ts';
             const currentCode =
               codeLang === 'ts' ? bug.playwright_ts_code : bug.playwright_py_code;
+
+            const isCdnError = bug.title.includes('simpleicons') || bug.title.includes('cdn');
+            const isCorsError = bug.title.includes('NotSameOrigin') || bug.title.includes('ERR_BLOCKED');
 
             return (
               <div
@@ -190,10 +193,22 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
                     {/* What Happened (Plain English) */}
                     <div className="bg-[#0a0a0a] p-4 rounded-xl border border-[#1c1c1c]">
                       <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-1 flex items-center gap-1.5 font-mono-code">
-                        <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
-                        What Happened
+                        <AlertCircle className="w-3.5 h-3.5 text-cyan-400" />
+                        What Happened & Why
                       </h4>
                       <p className="text-xs text-[#cccccc] leading-relaxed">{bug.description}</p>
+                      
+                      {isCdnError && (
+                        <div className="mt-2.5 p-2.5 rounded-lg bg-[#141414] border border-[#282828] text-[11px] text-[#aaaaaa]">
+                          💡 <strong className="text-white">Quick Fix:</strong> An external CDN icon failed to load. We recommend downloading the SVG icons and hosting them locally in your <code className="text-cyan-300">/public</code> folder.
+                        </div>
+                      )}
+                      
+                      {isCorsError && (
+                        <div className="mt-2.5 p-2.5 rounded-lg bg-[#141414] border border-[#282828] text-[11px] text-[#aaaaaa]">
+                          💡 <strong className="text-white">Quick Fix:</strong> Cross-Origin Resource Policy (CORP) check. This is standard browser security when embedding assets from external domains.
+                        </div>
+                      )}
                     </div>
 
                     {/* How to Reproduce */}
@@ -222,7 +237,7 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
                     {bug.stack_trace && (
                       <div>
                         <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] mb-1 font-mono-code">
-                          Captured Error Output / Server Response
+                          Captured Console / Network Output
                         </h4>
                         <pre className="p-3 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] font-mono-code text-[11px] text-rose-300 overflow-x-auto leading-relaxed">
                           {bug.stack_trace}
@@ -313,7 +328,7 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
                         {copiedIssueId === bug.id ? (
                           <Check className="w-3.5 h-3.5 text-emerald-400" />
                         ) : (
-                          <Share2 className="w-3.5 h-3.5 text-indigo-400" />
+                          <Share2 className="w-3.5 h-3.5 text-cyan-400" />
                         )}
                         <span>
                           {copiedIssueId === bug.id

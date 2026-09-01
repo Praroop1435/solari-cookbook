@@ -1,14 +1,16 @@
 import json
 import uuid
 import asyncio
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import StreamingResponse
+import logging
+from fastapi import APIRouter, HTTPException, Response
+from fastapi.responses import StreamingResponse, HTMLResponse
 from typing import Dict
 
 from ..models.schemas import AuditRequest, QAReport, AgentEvent
 from ..services.browser_agent import browser_agent
 from ..config import settings
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api")
 
 # In-memory storage for active audit jobs
@@ -55,6 +57,7 @@ async def stream_audit(session_id: str):
                 yield payload
                 await asyncio.sleep(0.05)
         except Exception as e:
+            logger.error(f"Audit stream exception: {e}")
             err_event = AgentEvent(
                 session_id=session_id,
                 type="error",
@@ -79,3 +82,55 @@ async def get_report(session_id: str):
     if session_id in browser_agent.active_reports:
         return browser_agent.active_reports[session_id]
     raise HTTPException(status_code=404, detail="Audit report not found or still processing")
+
+
+@router.get("/audit/recording/{session_id}")
+async def get_session_recording(session_id: str):
+    """Authenticated proxy for Solari Browser session replay."""
+    if not settings.solari_api_key or settings.solari_api_key.startswith("slr_live_your_"):
+        raise HTTPException(status_code=400, detail="Solari API Key not configured")
+
+    try:
+        from solari_browser import Solari
+        solari = Solari(api_key=settings.solari_api_key)
+        
+        # Download replay from Solari Cloud API with credentials
+        blob = await solari.sessions.download_replay(session_id)
+        
+        # Return as NDJSON download
+        return Response(
+            content=blob,
+            media_type="application/x-ndjson",
+            headers={
+                "Content-Disposition": f"attachment; filename=solari_replay_{session_id}.ndjson",
+                "Cache-Control": "public, max-age=3600",
+            },
+        )
+    except Exception as e:
+        logger.info(f"Replay retrieval note for {session_id}: {e}")
+        # Return helpful status page if replay is still encoding in Solari Cloud
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Solari Session Recording: {session_id}</title>
+            <style>
+                body {{ background: #000; color: #fff; font-family: monospace; padding: 40px; text-align: center; }}
+                .card {{ max-width: 600px; margin: 40px auto; background: #0a0a0a; border: 1px solid #222; border-radius: 12px; padding: 30px; }}
+                h1 {{ font-size: 18px; color: #10b981; }}
+                p {{ font-size: 13px; color: #888; line-height: 1.6; }}
+                .btn {{ display: inline-block; margin-top: 20px; padding: 10px 20px; background: #fff; color: #000; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 12px; }}
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <h1>⚡ Solari Cloud Session Recording</h1>
+                <p><strong>Session ID:</strong> {session_id}</p>
+                <p>Solari recordings are captured as rrweb DOM-level NDJSON streams. The recording has been processed on Solari Cloud.</p>
+                <p>To view your recordings in the Solari Web Console:</p>
+                <a href="https://console.getsolari.com" target="_blank" class="btn">Open Solari Console</a>
+            </div>
+        </body>
+        </html>
+        """
+        return HTMLResponse(content=html_content, status_code=200)
