@@ -1,0 +1,8 @@
+{
+  "venvPath": "examples/bugscout/backend",
+  "venv": ".venv",
+  "extraPaths": [
+    "examples/bugscout/backend",
+    "examples/bugscout/backend/.venv/lib/python3.13/site-packages"
+  ]
+}

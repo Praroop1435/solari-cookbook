@@ -9,7 +9,11 @@ from typing import Any
 from urllib.parse import urlparse
 
 import httpx
-from bs4 import BeautifulSoup
+
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
 
 from ..config import settings
 from ..models.schemas import AgentEvent, AuditRequest, DiscoveredBug, QAReport

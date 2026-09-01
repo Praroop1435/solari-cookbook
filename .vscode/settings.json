@@ -1,0 +1,7 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/examples/bugscout/backend/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/examples/bugscout/backend",
+    "${workspaceFolder}/examples/bugscout/backend/.venv/lib/python3.13/site-packages"
+  ]
+}
