@@ -1,0 +1,59 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #000000;
+    color: #ededed;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Solari Grid Pattern Background */
+.solari-grid {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+.solari-dots {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Solari Panels & Cards */
+.solari-panel {
+  background: #080808;
+  border: 1px solid #1f1f1f;
+}
+
+.solari-card {
+  background: #0d0d0d;
+  border: 1px solid #1c1c1c;
+}
+
+.solari-card:hover {
+  border-color: #333333;
+}
+
+/* Code & Terminal */
+.font-mono-code {
+  font-family: "JetBrains Mono", "Fragment Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #000000;
+}
+::-webkit-scrollbar-thumb {
+  background: #222222;
+  border-radius: 2px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #383838;
+}

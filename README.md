@@ -37,6 +37,7 @@ past. Copy one into your project and change the parts you care about.
 
 | Example | Language | What it shows |
 | --- | --- | --- |
+| [bugscout](examples/bugscout) | Python + Next.js | **Autonomous Self-Healing QA & Bug Discovery Agent**: Stealth cloud browser anomaly trapping (CDP console errors, 4xx/5xx network failures), automated Playwright test synthesis, live Solari MicroVM Sandbox test verification, and session video replay. |
 | [scout-ai](examples/scout-ai) | Python + Next.js | **Autonomous AI Research Agent**: Live stealth cloud browser navigation, grounded fact extraction, stateful MicroVM Sandbox quantitative ranking, and real-time SSE stream. |
 
 ## Running an example
