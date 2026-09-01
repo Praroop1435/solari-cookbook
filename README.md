@@ -12,12 +12,11 @@ Every example in this repo is a complete program you can run in under a minute. 
 
 ---
 
-## 🌟 Flagship Full-Stack Agent Applications
+## 🌟 Flagship Full-Stack Agent: BugScout AI
 
 | Application | Stack | What it does |
 | :--- | :--- | :--- |
-| [**BugScout AI**](examples/bugscout) | Python (FastAPI) + Next.js 15 | **Autonomous Self-Healing QA & Bug Discovery Agent**: Stealth cloud browser anomaly trapping (CDP console exceptions, 4xx/5xx network failures), automated Playwright test synthesis, live Solari MicroVM Sandbox test verification, and session video replays. |
-| [**ScoutAI**](examples/scout-ai) | Python (FastAPI) + Next.js 15 | **Autonomous AI Research Agent**: Live stealth cloud browser navigation, grounded fact extraction, stateful MicroVM Sandbox quantitative ranking, and real-time SSE stream. |
+| [**BugScout AI**](examples/bugscout) | Python (FastAPI) + Next.js 16 | **Autonomous Self-Healing QA & Bug Discovery Agent**: Stealth cloud browser anomaly trapping (CDP console exceptions, 4xx/5xx network failures), automated Playwright test synthesis, live Solari MicroVM Sandbox test verification, authenticated session video replays, and persistent auth profiles. |
 
 ---
 

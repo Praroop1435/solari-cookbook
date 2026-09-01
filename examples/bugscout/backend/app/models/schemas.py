@@ -12,6 +12,11 @@ class AuditRequest(BaseModel):
     stealth_mode: bool = Field(default=True, description="Enable Solari stealth mode & residential proxy")
     record_session: bool = Field(default=True, description="Enable Solari browser session video recording")
     max_depth: int = Field(default=3, ge=1, le=10, description="Exploration depth for autonomous agent")
+    # Authenticated Testing Support (Solari Persistent Profiles & Auto-Login)
+    auth_username: Optional[str] = Field(default=None, description="Optional username/email for authenticated QA testing")
+    auth_password: Optional[str] = Field(default=None, description="Optional password for authenticated QA testing")
+    profile_id: Optional[str] = Field(default=None, description="Optional Solari persistent profile ID to reuse logged-in session")
+    storage_state: Optional[str] = Field(default=None, description="Optional JSON storageState / cookies")
 
 
 class DiscoveredBug(BaseModel):

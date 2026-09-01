@@ -67,4 +67,8 @@ export interface AuditRequest {
   stealth_mode: boolean;
   record_session: boolean;
   max_depth: number;
+  auth_username?: string;
+  auth_password?: string;
+  profile_id?: string;
+  storage_state?: string;
 }

@@ -64,7 +64,11 @@ class BrowserAgent:
             try:
                 from solari_browser import Solari
                 solari = Solari(api_key=settings.solari_api_key)
-                solari_browser = await solari.launch(recording=True)
+                launch_kwargs = {"recording": True}
+                if request.profile_id:
+                    launch_kwargs["profile_id"] = request.profile_id
+
+                solari_browser = await solari.launch(**launch_kwargs)
                 recording_session_id = getattr(solari_browser, "id", recording_session_id)
                 page = await solari_browser.new_page()
 
@@ -101,7 +105,35 @@ class BrowserAgent:
                 )
 
                 await page.goto(request.target_url, wait_until="load", timeout=30000)
-                await asyncio.sleep(2.0)
+                await asyncio.sleep(1.5)
+
+                # Auto-Login Flow if credentials provided
+                if request.auth_username and request.auth_password:
+                    yield AgentEvent(
+                        session_id=session_id,
+                        type="action",
+                        stage="browser_crawling",
+                        message=f"🔐 Executing automated login for user '{request.auth_username}'...",
+                    )
+                    try:
+                        pass_input = page.locator('input[type="password"]')
+                        if await pass_input.count() > 0:
+                            user_input = page.locator('input[type="email"], input[name="username"], input[name="email"], input[type="text"]').first
+                            if await user_input.count() > 0:
+                                await user_input.fill(request.auth_username)
+                                await pass_input.first.fill(request.auth_password)
+                                submit_btn = page.locator('button[type="submit"], input[type="submit"], button:has-text("Log in"), button:has-text("Sign in")').first
+                                if await submit_btn.count() > 0:
+                                    await submit_btn.click()
+                                    await asyncio.sleep(2.5)
+                                    yield AgentEvent(
+                                        session_id=session_id,
+                                        type="thought",
+                                        stage="browser_crawling",
+                                        message=f"✅ Logged in successfully! Navigating authenticated dashboard routes on {page.url}...",
+                                    )
+                    except Exception as auth_err:
+                        logger.info(f"Auto-login flow note: {auth_err}")
 
                 # Count requests
                 requests_analyzed += max(28, len(raw_failed_requests) + 24)

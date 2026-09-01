@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Shield, Video, ArrowRight, Globe, AlertTriangle, Zap, Check } from 'lucide-react';
+import { Search, Shield, Video, ArrowRight, Globe, AlertTriangle, Zap, Check, Lock, User, Key } from 'lucide-react';
 import { AuditRequest } from '../types';
 
 interface AuditConfigProps {
@@ -50,6 +50,12 @@ export const AuditConfig: React.FC<AuditConfigProps> = ({ onStartAudit, isLoadin
   const [recordSession, setRecordSession] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
 
+  // Authenticated Testing State
+  const [enableAuth, setEnableAuth] = useState(false);
+  const [authUsername, setAuthUsername] = useState('');
+  const [authPassword, setAuthPassword] = useState('');
+  const [profileId, setProfileId] = useState('');
+
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!targetUrl.trim() || isLoading) return;
@@ -59,6 +65,9 @@ export const AuditConfig: React.FC<AuditConfigProps> = ({ onStartAudit, isLoadin
       stealth_mode: stealthMode,
       record_session: recordSession,
       max_depth: 3,
+      auth_username: enableAuth && authUsername.trim() ? authUsername.trim() : undefined,
+      auth_password: enableAuth && authPassword.trim() ? authPassword.trim() : undefined,
+      profile_id: enableAuth && profileId.trim() ? profileId.trim() : undefined,
     });
   };
 
@@ -197,50 +206,125 @@ export const AuditConfig: React.FC<AuditConfigProps> = ({ onStartAudit, isLoadin
           </div>
         </div>
 
-        {/* Simplified Settings with Plain-English Hints */}
+        {/* Advanced Options & Authenticated Testing */}
         <div className="pt-2">
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
             className="text-xs font-mono-code text-[#777777] hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
           >
-            <span>{showAdvanced ? '− Hide Advanced Settings' : '+ Show Advanced Settings (Stealth & Video)'}</span>
+            <span>{showAdvanced ? '− Hide Advanced Settings' : '+ Show Advanced Settings (Stealth, Video & Logged-In Auth)'}</span>
           </button>
 
           {showAdvanced && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 mt-2 border-t border-[#1c1c1c]">
-              <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
-                <div className="flex items-center gap-2.5">
-                  <Shield className={`w-4 h-4 ${stealthMode ? 'text-emerald-400' : 'text-[#555555]'}`} />
-                  <div>
-                    <div className="text-xs font-semibold text-white font-mono-code">Human-Like Stealth Mode</div>
-                    <div className="text-[11px] text-[#777777]">Visits site using real human mouse paths so it never gets blocked.</div>
+            <div className="space-y-4 pt-4 mt-2 border-t border-[#1c1c1c]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
+                  <div className="flex items-center gap-2.5">
+                    <Shield className={`w-4 h-4 ${stealthMode ? 'text-emerald-400' : 'text-[#555555]'}`} />
+                    <div>
+                      <div className="text-xs font-semibold text-white font-mono-code">Human-Like Stealth Mode</div>
+                      <div className="text-[11px] text-[#777777]">Visits site using real human mouse paths so it never gets blocked.</div>
+                    </div>
                   </div>
+                  <input
+                    type="checkbox"
+                    checked={stealthMode}
+                    onChange={(e) => setStealthMode(e.target.checked)}
+                    disabled={isLoading}
+                    className="w-4 h-4 rounded bg-[#141414] border-[#333333] text-white focus:ring-0 cursor-pointer"
+                  />
                 </div>
-                <input
-                  type="checkbox"
-                  checked={stealthMode}
-                  onChange={(e) => setStealthMode(e.target.checked)}
-                  disabled={isLoading}
-                  className="w-4 h-4 rounded bg-[#141414] border-[#333333] text-white focus:ring-0 cursor-pointer"
-                />
+
+                <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
+                  <div className="flex items-center gap-2.5">
+                    <Video className={`w-4 h-4 ${recordSession ? 'text-rose-400' : 'text-[#555555]'}`} />
+                    <div>
+                      <div className="text-xs font-semibold text-white font-mono-code">Record Full Session Video</div>
+                      <div className="text-[11px] text-[#777777]">Captures video replay of what happened for developers to watch.</div>
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={recordSession}
+                    onChange={(e) => setRecordSession(e.target.checked)}
+                    disabled={isLoading}
+                    className="w-4 h-4 rounded bg-[#141414] border-[#333333] text-white focus:ring-0 cursor-pointer"
+                  />
+                </div>
               </div>
 
-              <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
-                <div className="flex items-center gap-2.5">
-                  <Video className={`w-4 h-4 ${recordSession ? 'text-rose-400' : 'text-[#555555]'}`} />
-                  <div>
-                    <div className="text-xs font-semibold text-white font-mono-code">Record Full Session Video</div>
-                    <div className="text-[11px] text-[#777777]">Captures video replay of what happened for developers to watch.</div>
+              {/* 🔐 Authenticated Login & Persistent Profile Support */}
+              <div className="p-4 rounded-xl bg-[#080808] border border-[#222222] space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Lock className={`w-4 h-4 ${enableAuth ? 'text-cyan-400' : 'text-[#666666]'}`} />
+                    <div>
+                      <div className="text-xs font-bold text-white font-mono-code flex items-center gap-2">
+                        <span>Behind-Login Testing & Credentials</span>
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-800 font-mono-code">
+                          Solari Persistent Profiles
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#777777] mt-0.5">
+                        Test dashboards, user settings, or admin portals behind a login wall.
+                      </p>
+                    </div>
                   </div>
+                  <input
+                    type="checkbox"
+                    checked={enableAuth}
+                    onChange={(e) => setEnableAuth(e.target.checked)}
+                    disabled={isLoading}
+                    className="w-4 h-4 rounded bg-[#141414] border-[#333333] text-cyan-400 focus:ring-0 cursor-pointer"
+                  />
                 </div>
-                <input
-                  type="checkbox"
-                  checked={recordSession}
-                  onChange={(e) => setRecordSession(e.target.checked)}
-                  disabled={isLoading}
-                  className="w-4 h-4 rounded bg-[#141414] border-[#333333] text-white focus:ring-0 cursor-pointer"
-                />
+
+                {enableAuth && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#1a1a1a]">
+                    <div>
+                      <label className="block text-[10px] font-mono-code text-[#888888] mb-1 flex items-center gap-1">
+                        <User className="w-3 h-3 text-[#666666]" /> Username / Email
+                      </label>
+                      <input
+                        type="text"
+                        value={authUsername}
+                        onChange={(e) => setAuthUsername(e.target.value)}
+                        placeholder="test_user@example.com"
+                        disabled={isLoading}
+                        className="w-full px-3 py-2 bg-[#000000] border border-[#262626] rounded-lg text-xs font-mono-code text-white placeholder-[#444444] focus:outline-none focus:border-cyan-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-mono-code text-[#888888] mb-1 flex items-center gap-1">
+                        <Key className="w-3 h-3 text-[#666666]" /> Password
+                      </label>
+                      <input
+                        type="password"
+                        value={authPassword}
+                        onChange={(e) => setAuthPassword(e.target.value)}
+                        placeholder="••••••••"
+                        disabled={isLoading}
+                        className="w-full px-3 py-2 bg-[#000000] border border-[#262626] rounded-lg text-xs font-mono-code text-white placeholder-[#444444] focus:outline-none focus:border-cyan-500"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-mono-code text-[#888888] mb-1 flex items-center gap-1">
+                        <Shield className="w-3 h-3 text-[#666666]" /> Or Solari Profile ID
+                      </label>
+                      <input
+                        type="text"
+                        value={profileId}
+                        onChange={(e) => setProfileId(e.target.value)}
+                        placeholder="profile_id (logged-in session)"
+                        disabled={isLoading}
+                        className="w-full px-3 py-2 bg-[#000000] border border-[#262626] rounded-lg text-xs font-mono-code text-white placeholder-[#444444] focus:outline-none focus:border-cyan-500"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
