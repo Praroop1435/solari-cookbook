@@ -4,89 +4,108 @@
 [![Next.js 16](https://img.shields.io/badge/Next.js-16.3-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org)
 [![Python 3.13](https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Multi-Model AI](https://img.shields.io/badge/AI%20Ensemble-Gemini%20%7C%20Claude%20%7C%20GPT-8A2BE2?style=for-the-badge)](https://getsolari.com)
+[![AI Ensemble](https://img.shields.io/badge/AI%20Ensemble-Gemini%203.5%20%7C%20Claude%203.7%20%7C%20GPT--4o-8A2BE2?style=for-the-badge)](https://getsolari.com)
 [![Pytest](https://img.shields.io/badge/Pytest-16%20Passed-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white)](https://pytest.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 
-> **Solari Sentinel** is an enterprise-grade autonomous Web Application Security, OWASP Top 10 Auditing, and Defensive Test Generation agent built natively on **[Solari](https://getsolari.com)** (Stealth Cloud Browsers, MicroVM Sandboxes, and Session Recordings) and powered by a **Multi-Model AI Consensus Engine (Gemini 2.0, Claude 3.5 Sonnet, and GPT-4o)**.
+> **Solari Sentinel** is an enterprise-grade autonomous Web Application Security, OWASP Top 10 Auditing, and Defensive Test Generation agent built natively on **[Solari](https://getsolari.com)** (Stealth Cloud Browsers, Linux MicroVM Sandboxes, and Session Recordings) and powered by a **Multi-Model AI Consensus Engine (Google Gemini 3.5 Flash Lite, Anthropic Claude 3.7 Sonnet, and OpenAI GPT-4o)**.
 >
-> Give Solari Sentinel any live URL. It crawls endpoints using **anti-bot stealth cloud browsers**, audits HTTP security headers (CSP, HSTS, X-Frame-Options), cookie flags (`HttpOnly`, `Secure`, `SameSite`), CORS misconfigurations, and client-side secret exposures. It scores findings with **CVSS v3.1**, synthesizes **defensive Playwright assertion suites**, and executes them inside isolated **Solari MicroVM Sandboxes** for 100% deterministic verification.
+> Give Solari Sentinel any live URL. It explores endpoints using **anti-bot stealth cloud browsers**, audits HTTP security headers (CSP, HSTS, X-Frame-Options), cookie security (`HttpOnly`, `Secure`, `SameSite`), CORS misconfigurations, and client-side secret exposures. It scores findings with **CVSS v3.1**, synthesizes **defensive Playwright assertion suites**, and executes them inside isolated **Solari MicroVM Sandboxes** for 100% deterministic verification.
 
 ---
 
-## ⚡ Why Solari?
+## ⚡ Why Solari Sentinel?
 
-Traditional QA bots fail because they run on local mock headless browsers that get blocked by Cloudflare/DataDome and hallucinate test scripts that don't actually run.
+Traditional automated security and QA scanners run on local mock headless browsers that get instantly blocked by Cloudflare, Akamai, or DataDome firewalls, and generate hallucinated test scripts that fail in production.
 
-BugScout leverages **all 3 pillars of Solari Cloud Infrastructure**:
+Solari Sentinel leverages **all 3 pillars of Solari Cloud Infrastructure**:
 
-| Solari Primitive | How BugScout Uses It |
+| Solari Primitive | How Solari Sentinel Uses It |
 | :--- | :--- |
-| **🌐 Stealth Cloud Browsers** | Bypasses anti-bot firewalls with residential US proxies and humanized cursor trajectories. Captures runtime CDP console exceptions (`console.error`, unhandled rejections) and failed network calls (`4xx/5xx`). |
-| **⚡ MicroVM Sandboxes** | Boots isolated ephemeral Linux microVMs (`template="base"`) in `<500ms` to execute synthesized Playwright test suites live and verify bug reproducibility before alerting developers. |
-| **🎥 Session Recording API** | Downloads full video replays of the discovered bug for instant visual triage by engineering teams. |
+| **🌐 Stealth Cloud Browsers** | Bypasses anti-bot firewalls with US residential proxies and humanized cursor trajectories. Traps CDP console errors, unhandled promise rejections, and analyzes all HTTP request/response headers. |
+| **⚡ MicroVM Sandboxes** | Boots isolated ephemeral Linux microVMs (`template="base"`) in `<500ms` to execute synthesized Playwright test suites live and verify deterministic security assertions before alerting developers. |
+| **🎥 Session Recording API** | Captures authenticated video replays of the security crawl for visual vulnerability review and audit compliance. |
 
 ---
 
-## 🏗️ Architecture
+## 🧠 Multi-Model AI Consensus Architecture
 
-```mermaid
-graph TD
-    User["Target Web App URL & Test Scope"] --> UI["Next.js 15 Minimalist Dashboard"]
-    UI --> Backend["FastAPI Agent Orchestration Server"]
-    
-    subgraph Phase 1: Exploration & Anomaly Detection
-        Backend --> SolariBrowser["Solari Stealth Cloud Browser"]
-        SolariBrowser --> CDP["CDP Console & Network Failures (4xx/5xx)"]
-        SolariBrowser --> DOM["DOM Mutation & Broken Elements"]
-        SolariBrowser --> Recording["Solari Session Recording Video API"]
-    end
-    
-    subgraph Phase 2: Bug Isolation & Test Synthesis
-        CDP --> Analyzer["Bug Classifier & LLM Reasoner"]
-        DOM --> Analyzer
-        Analyzer --> PlaywrightGen["Playwright Test Generator (Python/TypeScript)"]
-    end
-    
-    subgraph Phase 3: MicroVM Sandbox Verification
-        PlaywrightGen --> SolariSandbox["Solari MicroVM Sandbox (Linux)"]
-        SolariSandbox --> VMRunner["Live Playwright Execution & Assertion Verification"]
-        VMRunner --> VMStdout["Live Terminal Stdout / Stderr"]
-    end
-    
-    subgraph Phase 4: Observability & Reporting
-        SolariBrowser --> SSE["Real-Time SSE Stream"]
-        VMStdout --> SSE
-        Recording --> SSE
-        SSE --> UI
-        Backend --> QAReport["Structured QA Audit Report + Playwright Specs"]
-        QAReport --> UI
-    end
+Solari Sentinel runs a **tri-model consensus matrix** to eliminate false positives:
+
+```
+                  ┌────────────────────────────────────────────────────────┐
+                  │              Target Web Application URL                │
+                  └──────────────────────────┬─────────────────────────────┘
+                                             │
+                                             ▼
+                  ┌────────────────────────────────────────────────────────┐
+                  │        Solari Stealth Cloud Browser (US Proxy)         │
+                  │   - Security Headers (CSP, HSTS, XFO, CORS)            │
+                  │   - Cookie Hygiene (HttpOnly, Secure, SameSite)        │
+                  │   - DOM Form Transmission & Client Secret Scanning     │
+                  │   - Chrome DevTools Protocol (CDP) Error Trapping      │
+                  └──────────────────────────┬─────────────────────────────┘
+                                             │
+                                             ▼
+                  ┌────────────────────────────────────────────────────────┐
+                  │             Multi-Model AI Consensus Engine            │
+                  │                                                        │
+                  │  🟢 Gemini 3.5 Flash Lite: Telemetry & DOM Analysis    │
+                  │  🟡 Claude 3.7 Sonnet: Threat Modeling & Fix Patches   │
+                  │  🔵 GPT-4o: CVSS v3.1 Scoring & Defensive Tests        │
+                  │                                                        │
+                  │      ➔ 2/3 Majority Agreement Required for Alerts       │
+                  └──────────────────────────┬─────────────────────────────┘
+                                             │
+                                             ▼
+                  ┌────────────────────────────────────────────────────────┐
+                  │             Solari MicroVM Linux Sandbox               │
+                  │   - Writes test_security_spec.py                       │
+                  │   - Executes live Playwright assertion suite           │
+                  │   - Emits streaming stdout/stderr terminal proof       │
+                  └──────────────────────────┬─────────────────────────────┘
+                                             │
+                                             ▼
+                  ┌────────────────────────────────────────────────────────┐
+                  │          Real-Time Tri-View Security Dashboard         │
+                  │   - Security Health Grade (A+ to F) & Mean CVSS        │
+                  │   - OWASP Top 10 Distribution Breakdown                │
+                  │   - Tabbed Framework Remediation (Next.js/FastAPI/Nginx│
+                  │   - 1-Click Export: GitHub Issue & Full Markdown Report│
+                  └────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## ✨ Features
+## ✨ Core Capabilities
 
-- **🚀 1-Click Interactive Demos**: Pre-loaded with test targets (Hacker News, Solari Cloud, HTTP 500 Crash Demo, Simple Web App).
-- **📡 Real-Time Tri-View Stream**:
-  - **1. AI Thinking & Live Decisions**: Real-time decision trail and anomaly notifications.
-  - **2. Live Cloud Browser Viewport**: Screen stream showing the actual page being explored, with an **Expand View** inspector.
-  - **3. Automated Test Runner**: Live streaming Linux terminal executing synthesized Playwright tests inside Solari MicroVMs.
-- **📋 1-Click Developer Export**:
-  - 📋 **Copy Ready-to-Paste GitHub / Jira Issue Ticket**: Pre-formatted Markdown with reproduction steps, error traces, and test code.
-  - 💾 **Download Playwright Spec**: 1-click download of `.spec.ts` (TypeScript) or `.py` (pytest-playwright) test files.
-- **📊 Executive Quality Scorecard**: Grade ratings (A+, A, B+, C, D), Health percentage gauge, and downloadable Markdown QA Audit Report.
-- **⚡ Resource Reclamation**: Strict `try/finally` lifecycle management calling `await browser.close()` and `await sandbox.kill()` to ensure zero lingering cloud billing.
+- **🛡️ Comprehensive Security Auditing**:
+  - **Security Headers**: Content-Security-Policy (CSP), HTTP Strict Transport Security (HSTS), X-Frame-Options, X-Content-Type-Options, Referrer-Policy.
+  - **CORS & Access Control**: Flags overly permissive `Access-Control-Allow-Origin: *` with credentials.
+  - **Cookie Hygiene**: Traps sensitive authentication cookies lacking `HttpOnly` or `Secure` flags.
+  - **DOM & Form Auditing**: Flags plaintext password submission over unencrypted HTTP and scans client bundles for leaked API keys (AWS, Stripe, GitHub tokens).
+- **🤖 Multi-Model Consensus (Gemini 3.5 + Claude 3.7 + GPT-4o)**:
+  - Dynamically runs parallel consensus reasoning across active models.
+  - Gracefully functions with whatever API key is provided (single-key fallback with multi-perspective analysis).
+- **⚡ Solari MicroVM Defensive Verification**:
+  - Synthesizes Playwright test specs in TypeScript (`@playwright/test`) and Python (`pytest-playwright`).
+  - Executes them in ephemeral Linux MicroVMs to guarantee 100% deterministic test reproducibility.
+- **🔐 Behind-Login & Authenticated Pentesting**:
+  - Built-in form-based credential login and **Solari Persistent Profile IDs** (to audit 2FA/SSO-protected dashboards).
+- **📋 1-Click Developer Exporter**:
+  - Ready-to-paste **GitHub Issue / Jira Tickets** with CVSS scores, repro steps, and test specs.
+  - Framework remediation snippets for **Next.js**, **FastAPI / Python**, **Nginx**, and **Express**.
+  - Downloadable **Executive Markdown Security Audit Report**.
 
 ---
 
 ## 🚀 Quickstart
 
 ### Prerequisites
-- **Python 3.13+** (`uv` or `python3`)
+- **Python 3.13+** (using `uv` package manager)
 - **Node.js 20+** & `npm`
 - **Solari API Key**: Get one at [console.getsolari.com](https://console.getsolari.com)
+- **Google Gemini / Claude / OpenAI API Key** (Gemini 3.5 Flash Lite configured by default)
 
 ---
 
@@ -95,18 +114,21 @@ graph TD
 ```bash
 cd examples/bugscout/backend
 
-# 1. Create environment file
+# 1. Install dependencies using uv
+uv sync
+
+# 2. Configure environment variables
 cp .env.example .env
-# Edit .env and paste your SOLARI_API_KEY
+# Edit .env with your SOLARI_API_KEY and GEMINI_API_KEY / ANTHROPIC_API_KEY / OPENAI_API_KEY
 
-# 2. Run backend tests (12 tests)
-PYTHONPATH=. pytest tests -v
+# 3. Run full test suite (16 tests)
+PYTHONPATH=. uv run pytest tests -v
 
-# 3. Start FastAPI backend server
-uvicorn app.main:app --port 8000 --host 0.0.0.0
+# 4. Start FastAPI backend server
+uv run uvicorn app.main:app --port 8000 --host 0.0.0.0
 ```
 
-The backend is live at `http://localhost:8000`.
+The backend API will be live at `http://localhost:8000`.
 
 ---
 
@@ -130,44 +152,45 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ```
 bugscout/
-├── README.md                           # Documentation & architecture guide
+├── README.md                           # Documentation & security architecture guide
 ├── backend/
-│   ├── pyproject.toml                  # Python 3.13 dependencies & ruff/pytest config
+│   ├── pyproject.toml                  # Python 3.13 dependencies & configuration (uv)
 │   ├── .env.example                    # Environment variable template
 │   ├── app/
-│   │   ├── config.py                   # Pydantic Settings & environment loader
-│   │   ├── main.py                     # FastAPI application factory & CORS
-│   │   ├── core/
-│   │   │   └── protocols.py            # Strict Protocol interfaces for drivers
+│   │   ├── config.py                   # Pydantic BaseSettings & model configurations
+│   │   ├── main.py                     # FastAPI application factory & CORS setup
 │   │   ├── models/
-│   │   │   └── schemas.py              # Pydantic V2 schemas (AuditRequest, Bug, Report)
+│   │   │   └── schemas.py              # Pydantic schemas (CVSS, OWASP, DiscoveredBug, QAReport)
 │   │   ├── services/
-│   │   │   ├── browser_agent.py        # Solari stealth browser & CDP anomaly trapper
-│   │   │   ├── bug_classifier.py       # Severity classification & GitHub ticket generator
+│   │   │   ├── browser_agent.py        # Autonomous security crawler & CDP anomaly trapper
+│   │   │   ├── security_scanner.py     # OWASP Top 10, Header, Cookie & DOM security auditor
+│   │   │   ├── llm_ensemble.py         # Multi-model consensus (Gemini 3.5, Claude 3.7, GPT-4o)
+│   │   │   ├── sandbox_runner.py       # Solari Linux MicroVM defensive assertion runner
 │   │   │   ├── test_synthesizer.py     # Playwright TS & Python script synthesizer
-│   │   │   ├── sandbox_runner.py       # Solari Linux MicroVM execution & kill() cleanup
+│   │   │   ├── bug_classifier.py       # CVSS scoring & GitHub issue generator
 │   │   │   └── recording_manager.py    # Solari session video replay manager
 │   │   └── api/
-│   │       └── routes.py               # SSE streaming & report API endpoints
+│   │       └── routes.py               # SSE streaming & security audit endpoints
 │   └── tests/
+│       ├── test_security.py            # SecurityScanner & LLMEnsemble unit tests
 │       ├── test_schemas.py             # Pydantic validation unit tests
 │       ├── test_classifier.py          # Severity scoring & ticket format tests
 │       ├── test_agent.py               # Synthesizer & agent unit tests
 │       └── test_api.py                 # FastAPI TestClient endpoint tests
 └── frontend/
-    ├── package.json                    # Next.js 15, React 19, Tailwind CSS
+    ├── package.json                    # Next.js 16, React 19, Tailwind CSS
     ├── tsconfig.json                   # TypeScript strict mode configuration
     ├── src/
     │   ├── app/
-    │   │   ├── page.tsx                # Main dashboard page
-    │   │   ├── layout.tsx              # Root HTML layout & fonts
-    │   │   └── globals.css             # Solari dark minimalist design system
+    │   │   ├── page.tsx                # Main security audit dashboard
+    │   │   ├── layout.tsx              # Root HTML layout & metadata
+    │   │   └── globals.css             # Dark minimalist theme & custom styling
     │   ├── components/
-    │   │   ├── Header.tsx              # Brand navbar & infrastructure status
-    │   │   ├── AuditConfig.tsx         # Target URL input & 1-click demo cards
-    │   │   ├── TriViewStream.tsx       # 3-panel real-time observability stream
-    │   │   ├── BugReportCard.tsx       # Discovered issues, test code & ticket exporter
-    │   │   └── QualityScorecard.tsx    # Executive health grade & report downloader
+    │   │   ├── Header.tsx              # Brand navbar & model ensemble badges
+    │   │   ├── AuditConfig.tsx         # Target URL input, scope presets & model switches
+    │   │   ├── TriViewStream.tsx       # 3-panel live telemetry, browser viewport & terminal
+    │   │   ├── BugReportCard.tsx       # CVSS badges, OWASP tags, multi-model consensus & fixes
+    │   │   └── QualityScorecard.tsx    # Security grade, mean CVSS, OWASP matrix & export
     │   └── types/
     │       └── index.ts                # TypeScript interfaces
 ```
@@ -178,20 +201,11 @@ bugscout/
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| `GET` | `/api/health` | Returns backend health and Solari Cloud connection status |
+| `GET` | `/api/health` | Returns backend health, Solari Cloud status, and active AI models |
 | `POST` | `/api/audit/start` | Initiates an autonomous audit job and returns `session_id` |
-| `GET` | `/api/audit/stream/{session_id}` | Server-Sent Events (SSE) stream yielding real-time thoughts, screenshots, and terminal logs |
-| `GET` | `/api/audit/report/{session_id}` | Returns the completed `QAReport` JSON |
-
----
-
-## 🧪 What BugScout Catches & Verifies
-
-1. **JavaScript Runtime Exceptions**: Catches uncaught `TypeError`, `ReferenceError`, unhandled promise rejections, and fatal bundle errors via Chrome DevTools Protocol.
-2. **Network 4xx/5xx Failures**: Catches broken API endpoints, internal server errors, missing CORS headers, and asset timeouts.
-3. **Broken DOM & Visual Assets**: Traps missing font files (`404 .woff2`), broken `<img>` tags, empty `href` anchor elements, and missing accessibility `alt` attributes.
-4. **Automated Playwright Synthesis**: Generates executable test scripts in TypeScript (`@playwright/test`) and Python (`pytest-playwright`).
-5. **Deterministic MicroVM Proof**: Runs synthesized tests inside an isolated Linux sandbox to verify that the bug is 100% reproducible before developers spend time investigating.
+| `GET` | `/api/audit/stream/{session_id}` | Real-time Server-Sent Events (SSE) stream of reasoning, screenshots, and terminal output |
+| `GET` | `/api/audit/report/{session_id}` | Returns completed `QAReport` with CVSS metrics and OWASP breakdown |
+| `GET` | `/api/audit/recording/{session_id}` | Proxies or redirects to full video replay of the crawl session |
 
 ---
 
