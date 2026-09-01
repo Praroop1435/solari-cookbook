@@ -106,11 +106,12 @@ class LLMEnsemble:
                             }
                         ],
                     )
-                    claude_thought = (
-                        str(res.content[0].text)
-                        if hasattr(res, "content") and res.content
-                        else f"Confirmed {bug.owasp_category} vulnerability."
-                    )
+                    content = getattr(res, "content", None)
+                    if content and isinstance(content, list) and len(content) > 0:
+                        first_block = content[0]
+                        claude_thought = str(getattr(first_block, "text", first_block))
+                    else:
+                        claude_thought = f"Confirmed {bug.owasp_category} vulnerability."
                 except Exception as e:
                     logger.info(f"Anthropic call note: {e}")
                     claude_thought = f"Confirmed threat vector: {bug.description[:110]}... Synthesized framework remediation patch."
@@ -135,10 +136,15 @@ class LLMEnsemble:
                             }
                         ],
                     )
-                    gpt_thought = (
-                        res.choices[0].message.content
-                        or f"Assigned CVSS v3.1 Base Score {bug.cvss_score}."
-                    )
+                    choices = getattr(res, "choices", None)
+                    if choices and len(choices) > 0:
+                        msg = getattr(choices[0], "message", None)
+                        gpt_thought = (
+                            getattr(msg, "content", None)
+                            or f"Assigned CVSS v3.1 Base Score {bug.cvss_score}."
+                        )
+                    else:
+                        gpt_thought = f"Assigned CVSS v3.1 Base Score {bug.cvss_score}."
                 except Exception as e:
                     logger.info(f"OpenAI call note: {e}")
                     gpt_thought = f"Calculated CVSS v3.1 Base Score: {bug.cvss_score or 6.5}/10. Verified defensive Playwright test harness."
