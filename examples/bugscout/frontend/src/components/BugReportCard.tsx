@@ -12,6 +12,7 @@ import {
   Check,
   Zap,
   Share2,
+  AlertCircle,
 } from 'lucide-react';
 import { DiscoveredBug, BugSeverity } from '../types';
 
@@ -56,47 +57,67 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
     setTimeout(() => setCopiedIssueId(null), 2000);
   };
 
-  const getSeverityBadgeClass = (severity: BugSeverity) => {
+  const getSeverityBadge = (severity: BugSeverity) => {
     switch (severity) {
       case 'critical':
-        return 'bg-rose-950/40 text-rose-400 border-rose-900/50';
+        return {
+          label: 'CRITICAL',
+          desc: 'Stops users or crashes page',
+          cls: 'bg-rose-950/60 text-rose-300 border-rose-800',
+        };
       case 'high':
-        return 'bg-orange-950/40 text-orange-400 border-orange-900/50';
+        return {
+          label: 'HIGH',
+          desc: 'Major feature broken',
+          cls: 'bg-orange-950/60 text-orange-300 border-orange-800',
+        };
       case 'medium':
-        return 'bg-amber-950/40 text-amber-400 border-amber-900/50';
+        return {
+          label: 'MEDIUM',
+          desc: 'Missing asset or warning',
+          cls: 'bg-amber-950/60 text-amber-300 border-amber-800',
+        };
       case 'low':
-        return 'bg-blue-950/40 text-blue-400 border-blue-900/50';
+        return {
+          label: 'LOW',
+          desc: 'Minor layout / accessibility',
+          cls: 'bg-blue-950/60 text-blue-300 border-blue-800',
+        };
       case 'visual':
-        return 'bg-purple-950/40 text-purple-400 border-purple-900/50';
+        return {
+          label: 'VISUAL',
+          desc: 'Styling inconsistency',
+          cls: 'bg-purple-950/60 text-purple-300 border-purple-800',
+        };
     }
   };
 
   return (
-    <div className="solari-panel rounded-xl p-5 sm:p-6 shadow-xl space-y-5">
-      {/* Header & Filter Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-3 border-b border-[#1c1c1c]">
+    <div className="solari-panel rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 border border-[#222222]">
+      {/* Header & Explanation */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[#1c1c1c]">
         <div>
           <div className="flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-rose-400" />
-            <h2 className="text-sm font-semibold text-white font-mono-code uppercase tracking-wider">
-              Discovered Anomalies & Playwright Suites
+            <ShieldAlert className="w-5 h-5 text-rose-400" />
+            <h2 className="text-base sm:text-lg font-bold text-white font-mono-code uppercase tracking-wider">
+              Discovered Issues & Ready-to-Use Fixes
             </h2>
           </div>
-          <p className="text-xs text-[#777777] mt-0.5">
-            Auto-trapped exceptions, reproduction sequences, and synthesized Playwright test suites
+          <p className="text-xs text-[#888888] mt-1">
+            Every issue below includes an automated Playwright test that your engineering team can run immediately.
           </p>
         </div>
 
         {/* Severity Filter Chips */}
-        <div className="flex flex-wrap items-center gap-1 bg-[#0a0a0a] p-1 rounded-md border border-[#1f1f1f]">
+        <div className="flex flex-wrap items-center gap-1.5 bg-[#0a0a0a] p-1 rounded-xl border border-[#1f1f1f]">
           {['all', 'critical', 'high', 'medium', 'low'].map((sev) => (
             <button
               key={sev}
               onClick={() => setSelectedSeverity(sev)}
-              className={`px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider font-mono-code transition-all cursor-pointer ${
+              className={`px-3 py-1 rounded-lg text-xs font-semibold uppercase tracking-wider font-mono-code transition-all cursor-pointer ${
                 selectedSeverity === sev
-                  ? 'bg-[#ffffff] text-[#000000]'
-                  : 'text-[#666666] hover:text-white'
+                  ? 'bg-white text-black shadow-md'
+                  : 'text-[#777777] hover:text-white'
               }`}
             >
               {sev}
@@ -107,14 +128,16 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
 
       {/* Bugs Accordion List */}
       {filteredBugs.length === 0 ? (
-        <div className="py-10 text-center text-[#555555]">
-          <CheckCircle className="w-8 h-8 mx-auto mb-2 text-emerald-500/40" />
-          <p className="text-xs font-mono-code">No bugs matching the selected filter</p>
+        <div className="py-12 text-center text-[#666666]">
+          <CheckCircle className="w-10 h-10 mx-auto mb-2 text-emerald-500/40" />
+          <p className="text-sm font-semibold text-white">No issues found matching this filter</p>
+          <p className="text-xs text-[#777777] mt-1">Your website passed all checks in this category.</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3.5">
           {filteredBugs.map((bug) => {
             const isExpanded = expandedBugId === bug.id;
+            const badge = getSeverityBadge(bug.severity);
             const codeLang = activeCodeTab[bug.id] || 'ts';
             const currentCode =
               codeLang === 'ts' ? bug.playwright_ts_code : bug.playwright_py_code;
@@ -122,176 +145,185 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
             return (
               <div
                 key={bug.id}
-                className="solari-card rounded-lg border transition-all overflow-hidden"
+                className="solari-card rounded-xl border border-[#222222] transition-all overflow-hidden"
               >
                 {/* Accordion Bar */}
                 <div
                   onClick={() => setExpandedBugId(isExpanded ? null : bug.id)}
-                  className="p-3.5 sm:p-4 flex items-center justify-between gap-3 cursor-pointer hover:bg-[#121212] transition-colors"
+                  className="p-4 sm:p-5 flex items-center justify-between gap-4 cursor-pointer hover:bg-[#121212] transition-colors"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0">
                     <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-mono-code border shrink-0 ${getSeverityBadgeClass(
-                        bug.severity
-                      )}`}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider font-mono-code border shrink-0 ${badge.cls}`}
                     >
-                      {bug.severity}
+                      {badge.label}
                     </span>
                     <div className="min-w-0">
-                      <h3 className="text-xs font-semibold text-white truncate font-mono-code">
+                      <h3 className="text-xs sm:text-sm font-bold text-white truncate font-mono-code">
                         {bug.title}
                       </h3>
-                      <p className="text-[11px] text-[#666666] truncate mt-0.5">{bug.url}</p>
+                      <p className="text-[11px] text-[#777777] truncate mt-0.5">{bug.url}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5 shrink-0">
+                  <div className="flex items-center gap-3 shrink-0">
                     {bug.verified_in_sandbox && (
-                      <span className="hidden sm:flex items-center gap-1 text-[10px] font-mono-code text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                      <span className="hidden sm:flex items-center gap-1.5 text-[11px] font-mono-code text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
                         <Zap className="w-3 h-3" />
-                        <span>MicroVM Verified</span>
+                        <span>Verified in MicroVM</span>
                       </span>
                     )}
-                    {isExpanded ? (
-                      <ChevronUp className="w-3.5 h-3.5 text-[#777777]" />
-                    ) : (
-                      <ChevronDown className="w-3.5 h-3.5 text-[#777777]" />
-                    )}
+                    <div className="text-xs font-mono-code text-[#777777] flex items-center gap-1">
+                      <span>{isExpanded ? 'Hide Details' : 'View Fix'}</span>
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-white" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-white" />
+                      )}
+                    </div>
                   </div>
                 </div>
 
                 {/* Expanded Details Drawer */}
                 {isExpanded && (
-                  <div className="p-4 sm:p-5 border-t border-[#1a1a1a] bg-[#050505] space-y-4">
-                    {/* Description */}
-                    <div>
-                      <h4 className="text-[10px] font-mono-code uppercase tracking-wider text-[#666666] mb-1">
-                        Bug Description
+                  <div className="p-5 sm:p-6 border-t border-[#1a1a1a] bg-[#050505] space-y-5">
+                    {/* What Happened (Plain English) */}
+                    <div className="bg-[#0a0a0a] p-4 rounded-xl border border-[#1c1c1c]">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-white mb-1 flex items-center gap-1.5 font-mono-code">
+                        <AlertCircle className="w-3.5 h-3.5 text-amber-400" />
+                        What Happened
                       </h4>
                       <p className="text-xs text-[#cccccc] leading-relaxed">{bug.description}</p>
                     </div>
 
-                    {/* Reproduction Steps */}
+                    {/* How to Reproduce */}
                     {bug.repro_steps.length > 0 && (
                       <div>
-                        <h4 className="text-[10px] font-mono-code uppercase tracking-wider text-[#666666] mb-1.5">
-                          Automated Reproduction Steps
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#aaaaaa] mb-2 font-mono-code">
+                          How to Reproduce (Step by Step)
                         </h4>
-                        <div className="space-y-1">
+                        <div className="space-y-1.5">
                           {bug.repro_steps.map((step, idx) => (
                             <div
                               key={idx}
-                              className="flex items-start gap-2 text-xs text-[#aaaaaa] bg-[#0a0a0a] p-2 rounded border border-[#1a1a1a] font-mono-code text-[11px]"
+                              className="flex items-start gap-2.5 text-xs text-[#cccccc] bg-[#0a0a0a] p-2.5 rounded-lg border border-[#1a1a1a]"
                             >
-                              <span className="text-emerald-400 font-bold">{idx + 1}.</span>
-                              <span>{step}</span>
+                              <span className="w-5 h-5 rounded-full bg-[#181818] text-white flex items-center justify-center text-[10px] font-mono-code font-bold shrink-0">
+                                {idx + 1}
+                              </span>
+                              <span className="mt-0.5">{step}</span>
                             </div>
                           ))}
                         </div>
                       </div>
                     )}
 
-                    {/* Stack Trace */}
+                    {/* Error Trace if available */}
                     {bug.stack_trace && (
                       <div>
-                        <h4 className="text-[10px] font-mono-code uppercase tracking-wider text-[#666666] mb-1">
-                          Captured Stack / Network Trace
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-[#888888] mb-1 font-mono-code">
+                          Captured Error Output / Server Response
                         </h4>
-                        <pre className="p-2.5 rounded bg-[#0a0a0a] border border-[#1a1a1a] font-mono-code text-[10px] text-rose-300 overflow-x-auto">
+                        <pre className="p-3 rounded-xl bg-[#0a0a0a] border border-[#1a1a1a] font-mono-code text-[11px] text-rose-300 overflow-x-auto leading-relaxed">
                           {bug.stack_trace}
                         </pre>
                       </div>
                     )}
 
-                    {/* Playwright Test Spec */}
+                    {/* Synthesized Playwright Test Spec */}
                     {currentCode && (
-                      <div className="space-y-1.5">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <FileCode className="w-3.5 h-3.5 text-indigo-400" />
-                            <h4 className="text-[10px] font-mono-code uppercase tracking-wider text-white">
-                              Synthesized Playwright Test Spec
+                      <div className="space-y-2">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div>
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-white font-mono-code flex items-center gap-1.5">
+                              <FileCode className="w-4 h-4 text-indigo-400" />
+                              Automated Playwright Test (Share with Devs)
                             </h4>
+                            <p className="text-[11px] text-[#777777]">
+                              Engineers can run this test locally or in CI/CD to prevent regressions.
+                            </p>
                           </div>
 
-                          {/* Language Tab */}
-                          <div className="flex items-center gap-1 bg-[#0a0a0a] p-0.5 rounded border border-[#1f1f1f]">
+                          {/* Language Switcher */}
+                          <div className="flex items-center gap-1 bg-[#0a0a0a] p-1 rounded-lg border border-[#1f1f1f] self-start sm:self-auto">
                             <button
                               onClick={() =>
                                 setActiveCodeTab({ ...activeCodeTab, [bug.id]: 'ts' })
                               }
-                              className={`px-2 py-0.5 text-[9px] font-mono-code font-semibold rounded cursor-pointer ${
+                              className={`px-2.5 py-1 text-[10px] font-mono-code font-bold rounded-md cursor-pointer transition-all ${
                                 codeLang === 'ts'
-                                  ? 'bg-[#ffffff] text-[#000000]'
-                                  : 'text-[#666666] hover:text-white'
+                                  ? 'bg-white text-black'
+                                  : 'text-[#777777] hover:text-white'
                               }`}
                             >
-                              TypeScript
+                              TypeScript (.spec.ts)
                             </button>
                             <button
                               onClick={() =>
                                 setActiveCodeTab({ ...activeCodeTab, [bug.id]: 'py' })
                               }
-                              className={`px-2 py-0.5 text-[9px] font-mono-code font-semibold rounded cursor-pointer ${
+                              className={`px-2.5 py-1 text-[10px] font-mono-code font-bold rounded-md cursor-pointer transition-all ${
                                 codeLang === 'py'
-                                  ? 'bg-[#ffffff] text-[#000000]'
-                                  : 'text-[#666666] hover:text-white'
+                                  ? 'bg-white text-black'
+                                  : 'text-[#777777] hover:text-white'
                               }`}
                             >
-                              Python
+                              Python (pytest)
                             </button>
                           </div>
                         </div>
 
-                        {/* Code Container */}
-                        <div className="relative rounded-lg overflow-hidden border border-[#1f1f1f] bg-[#000000]">
-                          <pre className="p-3 font-mono-code text-[10px] text-[#e0e0e0] overflow-x-auto leading-relaxed">
+                        {/* Code Display */}
+                        <div className="relative rounded-xl overflow-hidden border border-[#222222] bg-[#000000]">
+                          <pre className="p-4 font-mono-code text-[11px] text-[#ededed] overflow-x-auto leading-relaxed">
                             {currentCode}
                           </pre>
-                          <div className="absolute top-2 right-2 flex items-center gap-1">
+                          <div className="absolute top-3 right-3 flex items-center gap-1.5">
                             <button
                               onClick={() => handleCopyCode(bug.id, currentCode)}
-                              className="p-1 rounded bg-[#141414] hover:bg-[#202020] text-[#cccccc] text-[10px] font-mono-code flex items-center gap-1 border border-[#2a2a2a] transition-all cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-lg bg-[#141414] hover:bg-[#222222] text-white text-xs font-mono-code flex items-center gap-1.5 border border-[#2a2a2a] transition-all cursor-pointer shadow-lg"
                               title="Copy code"
                             >
                               {copiedId === bug.id ? (
-                                <Check className="w-3 h-3 text-emerald-400" />
+                                <Check className="w-3.5 h-3.5 text-emerald-400" />
                               ) : (
-                                <Copy className="w-3 h-3" />
+                                <Copy className="w-3.5 h-3.5" />
                               )}
-                              <span>{copiedId === bug.id ? 'Copied' : 'Copy'}</span>
+                              <span>{copiedId === bug.id ? 'Copied!' : 'Copy Code'}</span>
                             </button>
                             <button
                               onClick={() => handleDownloadSpec(bug, codeLang === 'ts')}
-                              className="p-1 rounded bg-[#141414] hover:bg-[#202020] text-[#cccccc] text-[10px] font-mono-code flex items-center gap-1 border border-[#2a2a2a] transition-all cursor-pointer"
+                              className="px-2.5 py-1.5 rounded-lg bg-[#141414] hover:bg-[#222222] text-white text-xs font-mono-code flex items-center gap-1.5 border border-[#2a2a2a] transition-all cursor-pointer shadow-lg"
                               title="Download spec file"
                             >
-                              <Download className="w-3 h-3" />
-                              <span>Download</span>
+                              <Download className="w-3.5 h-3.5" />
+                              <span>Download File</span>
                             </button>
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Action Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#1a1a1a]">
+                    {/* Quick Sharing Options */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#1a1a1a]">
                       <button
                         onClick={() => handleCopyGithubIssue(bug)}
-                        className="px-2.5 py-1 rounded bg-[#0f0f0f] hover:bg-[#181818] text-[#cccccc] text-[10px] font-mono-code flex items-center gap-1.5 border border-[#222222] transition-all cursor-pointer"
+                        className="px-4 py-2 rounded-xl bg-[#111111] hover:bg-[#1c1c1c] text-white text-xs font-semibold font-mono-code flex items-center gap-2 border border-[#262626] transition-all cursor-pointer shadow-md"
                       >
                         {copiedIssueId === bug.id ? (
-                          <Check className="w-3 h-3 text-emerald-400" />
+                          <Check className="w-3.5 h-3.5 text-emerald-400" />
                         ) : (
-                          <Share2 className="w-3 h-3 text-indigo-400" />
+                          <Share2 className="w-3.5 h-3.5 text-indigo-400" />
                         )}
                         <span>
-                          {copiedIssueId === bug.id ? 'Copied Issue Markdown' : 'Copy GitHub/Jira Issue Ticket'}
+                          {copiedIssueId === bug.id
+                            ? 'Copied Ticket to Clipboard!'
+                            : 'Copy Ready-to-Paste GitHub / Jira Ticket'}
                         </span>
                       </button>
 
-                      <div className="text-[10px] text-[#555555] font-mono-code">
-                        ID: {bug.id} | Solari CDP Trapped
+                      <div className="text-xs text-[#666666] font-mono-code">
+                        Issue ID: <span className="text-white">{bug.id}</span>
                       </div>
                     </div>
                   </div>

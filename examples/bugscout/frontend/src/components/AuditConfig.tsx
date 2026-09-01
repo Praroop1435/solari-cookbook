@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, Shield, Video, Layers, ArrowRight, Terminal } from 'lucide-react';
+import { Search, Shield, Video, ArrowRight, Globe, AlertTriangle, Zap, Check } from 'lucide-react';
 import { AuditRequest } from '../types';
 
 interface AuditConfigProps {
@@ -10,161 +10,240 @@ interface AuditConfigProps {
 }
 
 const PRESET_TARGETS = [
-  { name: 'Hacker News', url: 'https://news.ycombinator.com', tag: 'Fast' },
-  { name: 'Solari Cloud', url: 'https://getsolari.com', tag: 'Stealth' },
-  { name: 'Broken API Demo', url: 'https://httpbin.org/status/500', tag: 'HTTP 500' },
-  { name: 'Baseline App', url: 'https://example.com', tag: 'Simple' },
+  {
+    name: 'Hacker News',
+    url: 'https://news.ycombinator.com',
+    tag: 'Live Web App',
+    badge: 'Popular',
+    desc: 'Tests real user navigation, link clicks, and layout structure.',
+    icon: Globe,
+  },
+  {
+    name: 'Solari Cloud',
+    url: 'https://getsolari.com',
+    tag: 'Stealth Test',
+    badge: 'Protected',
+    desc: 'Visits modern protected SaaS using human-like mouse movements.',
+    icon: Shield,
+  },
+  {
+    name: '500 Crash Demo',
+    url: 'https://httpbin.org/status/500',
+    tag: 'Server Error',
+    badge: 'Error Trap',
+    desc: 'See how AI instantly catches a broken backend and writes the test.',
+    icon: AlertTriangle,
+  },
+  {
+    name: 'Simple Web App',
+    url: 'https://example.com',
+    tag: 'Smoke Test',
+    badge: '10s Fast',
+    desc: 'Quick standard check for missing images and broken buttons.',
+    icon: Zap,
+  },
 ];
 
 export const AuditConfig: React.FC<AuditConfigProps> = ({ onStartAudit, isLoading }) => {
   const [targetUrl, setTargetUrl] = useState('https://news.ycombinator.com');
-  const [testScope, setTestScope] = useState('Full Smoke Test & Anomaly Discovery');
   const [stealthMode, setStealthMode] = useState(true);
   const [recordSession, setRecordSession] = useState(true);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     if (!targetUrl.trim() || isLoading) return;
     onStartAudit({
       target_url: targetUrl.trim(),
-      test_scope: testScope,
+      test_scope: 'Full Automated QA Audit',
       stealth_mode: stealthMode,
       record_session: recordSession,
       max_depth: 3,
     });
   };
 
+  const handleSelectPreset = (url: string) => {
+    setTargetUrl(url);
+  };
+
   return (
-    <div className="solari-panel rounded-xl p-5 sm:p-6 shadow-xl relative overflow-hidden">
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Title Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#1c1c1c]">
-          <div>
-            <h1 className="text-base font-semibold text-white tracking-tight flex items-center gap-2">
-              <Terminal className="w-4 h-4 text-emerald-400" />
-              Autonomous Self-Healing QA & Anomaly Discovery
-            </h1>
-            <p className="text-xs text-[#888888] mt-0.5">
-              Traps console exceptions, network 4xx/5xx failures, synthesizes Playwright test specs, and verifies in Solari MicroVMs.
-            </p>
+    <div className="solari-panel rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden border border-[#222222]">
+      {/* 3-Step Simple Explanation */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pb-6 border-b border-[#1c1c1c] text-xs">
+        <div className="flex items-start gap-3 bg-[#0a0a0a] p-3 rounded-xl border border-[#1a1a1a]">
+          <div className="w-6 h-6 rounded-full bg-white text-black font-bold flex items-center justify-center text-xs shrink-0">
+            1
           </div>
-          <div className="text-[11px] font-mono-code text-[#666666] self-start sm:self-auto">
-            [SOLARI-BROWSER-CDP]
+          <div>
+            <h2 className="font-semibold text-white">Enter Any Website</h2>
+            <p className="text-[#888888] text-[11px] mt-0.5">Paste any live web app or pick a 1-click demo below.</p>
           </div>
         </div>
 
-        {/* Main URL Command Bar */}
+        <div className="flex items-start gap-3 bg-[#0a0a0a] p-3 rounded-xl border border-[#1a1a1a]">
+          <div className="w-6 h-6 rounded-full bg-white text-black font-bold flex items-center justify-center text-xs shrink-0">
+            2
+          </div>
+          <div>
+            <h2 className="font-semibold text-white">AI Explores in Real Time</h2>
+            <p className="text-[#888888] text-[11px] mt-0.5">AI browser clicks, navigates, and catches crashes live.</p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3 bg-[#0a0a0a] p-3 rounded-xl border border-[#1a1a1a]">
+          <div className="w-6 h-6 rounded-full bg-white text-black font-bold flex items-center justify-center text-xs shrink-0">
+            3
+          </div>
+          <div>
+            <h2 className="font-semibold text-white">Get Health Score & Bug Fixes</h2>
+            <p className="text-[#888888] text-[11px] mt-0.5">See what broke, with verified automated tests for devs.</p>
+          </div>
+        </div>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+        {/* Main URL Input */}
         <div>
-          <div className="flex flex-col sm:flex-row gap-2.5">
+          <label className="block text-xs font-semibold uppercase tracking-wider text-[#aaaaaa] font-mono-code mb-2 flex items-center justify-between">
+            <span>Website Address to Test</span>
+            <span className="text-[11px] text-[#666666] normal-case font-normal">
+              e.g. your website, store, or web app
+            </span>
+          </label>
+          <div className="flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-                <Search className="h-4 w-4 text-[#555555]" />
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-[#666666]" />
               </div>
               <input
                 type="url"
                 required
                 value={targetUrl}
                 onChange={(e) => setTargetUrl(e.target.value)}
-                placeholder="https://your-app.com"
+                placeholder="https://example.com"
                 disabled={isLoading}
-                className="w-full pl-10 pr-4 py-2.5 bg-[#0a0a0a] border border-[#222222] rounded-lg text-white placeholder-[#555555] focus:outline-none focus:border-[#555555] text-xs font-mono-code transition-all"
+                className="w-full pl-12 pr-4 py-3.5 bg-[#0a0a0a] border border-[#2e2e2e] rounded-xl text-white placeholder-[#555555] focus:outline-none focus:border-white text-sm font-mono-code transition-all shadow-inner"
               />
             </div>
             <button
               type="submit"
               disabled={isLoading || !targetUrl.trim()}
-              className="px-5 py-2.5 rounded-lg bg-[#ffffff] hover:bg-[#eaeaea] text-[#000000] font-semibold text-xs font-mono-code flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0"
+              className="px-7 py-3.5 rounded-xl bg-[#ffffff] hover:bg-[#eaeaea] text-[#000000] font-bold text-sm font-mono-code flex items-center justify-center gap-2.5 transition-all active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shrink-0 shadow-lg shadow-white/10"
             >
               {isLoading ? (
                 <>
-                  <div className="w-3.5 h-3.5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                  <span>Auditing...</span>
+                  <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                  <span>Testing Website...</span>
                 </>
               ) : (
                 <>
-                  <span>Run Audit</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span>Run AI Audit</span>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </div>
         </div>
 
-        {/* Presets Row */}
-        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-          <span className="text-[11px] font-mono-code text-[#666666] mr-1">Presets:</span>
-          {PRESET_TARGETS.map((preset) => (
-            <button
-              key={preset.url}
-              type="button"
-              onClick={() => setTargetUrl(preset.url)}
-              disabled={isLoading}
-              className="px-2.5 py-1 rounded bg-[#0f0f0f] hover:bg-[#181818] border border-[#1f1f1f] text-[11px] font-mono-code text-[#aaaaaa] hover:text-white transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              <span>{preset.name}</span>
-              <span className="text-[9px] px-1 py-0.2 rounded bg-[#1c1c1c] text-[#777777]">
-                {preset.tag}
-              </span>
-            </button>
-          ))}
+        {/* 1-Click Interactive Presets */}
+        <div>
+          <div className="flex items-center justify-between mb-2.5">
+            <span className="text-xs font-semibold text-[#888888] uppercase tracking-wider font-mono-code">
+              Try a 1-Click Example Demo:
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {PRESET_TARGETS.map((preset) => {
+              const isSelected = targetUrl === preset.url;
+              const Icon = preset.icon;
+              return (
+                <button
+                  key={preset.url}
+                  type="button"
+                  onClick={() => handleSelectPreset(preset.url)}
+                  disabled={isLoading}
+                  className={`p-3.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
+                    isSelected
+                      ? 'bg-[#141414] border-white text-white shadow-lg'
+                      : 'bg-[#0a0a0a] border-[#1f1f1f] hover:border-[#3a3a3a] hover:bg-[#111111] text-[#999999]'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-1.5">
+                      <div className="flex items-center gap-2">
+                        <div className={`p-1.5 rounded-lg ${isSelected ? 'bg-white text-black' : 'bg-[#181818] text-white'}`}>
+                          <Icon className="w-3.5 h-3.5" />
+                        </div>
+                        <span className="text-xs font-bold font-mono-code text-white">
+                          {preset.name}
+                        </span>
+                      </div>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#1c1c1c] text-[#aaaaaa] font-mono-code border border-[#2a2a2a]">
+                        {preset.badge}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-[#777777] leading-snug">
+                      {preset.desc}
+                    </p>
+                  </div>
+
+                  <div className="mt-3 pt-2 border-t border-[#1a1a1a] flex items-center justify-between text-[10px] font-mono-code text-[#666666]">
+                    <span>{preset.tag}</span>
+                    {isSelected && <span className="text-emerald-400 font-bold flex items-center gap-1"><Check className="w-3 h-3" /> Selected</span>}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Configuration Toggles */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-[#1a1a1a]">
-          {/* Test Scope */}
-          <div>
-            <label className="block text-[11px] font-mono-code text-[#777777] mb-1 flex items-center gap-1">
-              <Layers className="w-3 h-3 text-[#777777]" />
-              Scope
-            </label>
-            <select
-              value={testScope}
-              onChange={(e) => setTestScope(e.target.value)}
-              disabled={isLoading}
-              className="w-full px-2.5 py-1.5 bg-[#0a0a0a] border border-[#222222] rounded-md text-[11px] font-mono-code text-white focus:outline-none focus:border-[#444444]"
-            >
-              <option>Full Smoke Test & Anomaly Discovery</option>
-              <option>Form Validation & Security Headers</option>
-              <option>Broken Asset & 404 Route Audit</option>
-              <option>Deep Link Crawl & Accessibility</option>
-            </select>
-          </div>
+        {/* Simplified Settings with Plain-English Hints */}
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+            className="text-xs font-mono-code text-[#777777] hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <span>{showAdvanced ? '− Hide Advanced Settings' : '+ Show Advanced Settings (Stealth & Video)'}</span>
+          </button>
 
-          {/* Stealth Mode */}
-          <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-[#0a0a0a] border border-[#1c1c1c]">
-            <div className="flex items-center gap-2">
-              <Shield className={`w-3.5 h-3.5 ${stealthMode ? 'text-emerald-400' : 'text-[#555555]'}`} />
-              <div>
-                <div className="text-[11px] font-mono-code text-white">Stealth Egress</div>
-                <div className="text-[9px] text-[#666666]">Residential Proxy</div>
+          {showAdvanced && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 mt-2 border-t border-[#1c1c1c]">
+              <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
+                <div className="flex items-center gap-2.5">
+                  <Shield className={`w-4 h-4 ${stealthMode ? 'text-emerald-400' : 'text-[#555555]'}`} />
+                  <div>
+                    <div className="text-xs font-semibold text-white font-mono-code">Human-Like Stealth Mode</div>
+                    <div className="text-[11px] text-[#777777]">Visits site using real human mouse paths so it never gets blocked.</div>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={stealthMode}
+                  onChange={(e) => setStealthMode(e.target.checked)}
+                  disabled={isLoading}
+                  className="w-4 h-4 rounded bg-[#141414] border-[#333333] text-white focus:ring-0 cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
+                <div className="flex items-center gap-2.5">
+                  <Video className={`w-4 h-4 ${recordSession ? 'text-rose-400' : 'text-[#555555]'}`} />
+                  <div>
+                    <div className="text-xs font-semibold text-white font-mono-code">Record Full Session Video</div>
+                    <div className="text-[11px] text-[#777777]">Captures video replay of what happened for developers to watch.</div>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={recordSession}
+                  onChange={(e) => setRecordSession(e.target.checked)}
+                  disabled={isLoading}
+                  className="w-4 h-4 rounded bg-[#141414] border-[#333333] text-white focus:ring-0 cursor-pointer"
+                />
               </div>
             </div>
-            <input
-              type="checkbox"
-              checked={stealthMode}
-              onChange={(e) => setStealthMode(e.target.checked)}
-              disabled={isLoading}
-              className="w-3.5 h-3.5 rounded bg-[#141414] border-[#2e2e2e] text-white focus:ring-0 cursor-pointer"
-            />
-          </div>
-
-          {/* Session Recording */}
-          <div className="flex items-center justify-between gap-2 p-2 rounded-md bg-[#0a0a0a] border border-[#1c1c1c]">
-            <div className="flex items-center gap-2">
-              <Video className={`w-3.5 h-3.5 ${recordSession ? 'text-rose-400' : 'text-[#555555]'}`} />
-              <div>
-                <div className="text-[11px] font-mono-code text-white">Session Replay</div>
-                <div className="text-[9px] text-[#666666]">Solari Video API</div>
-              </div>
-            </div>
-            <input
-              type="checkbox"
-              checked={recordSession}
-              onChange={(e) => setRecordSession(e.target.checked)}
-              disabled={isLoading}
-              className="w-3.5 h-3.5 rounded bg-[#141414] border-[#2e2e2e] text-white focus:ring-0 cursor-pointer"
-            />
-          </div>
+          )}
         </div>
       </form>
     </div>

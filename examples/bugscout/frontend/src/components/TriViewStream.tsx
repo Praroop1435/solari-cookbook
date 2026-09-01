@@ -2,7 +2,7 @@
 
 /* eslint-disable @next/next/no-img-element */
 import React, { useRef, useEffect, useState } from 'react';
-import { Sparkles, ShieldAlert, Bug, Globe, Play, Cpu } from 'lucide-react';
+import { Sparkles, ShieldAlert, Bug, Globe, Play, Cpu, Maximize2 } from 'lucide-react';
 import { AgentEvent, DiscoveredBug } from '../types';
 
 interface TriViewStreamProps {
@@ -23,6 +23,7 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const eventsEndRef = useRef<HTMLDivElement>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'reasoning' | 'browser' | 'sandbox'>('all');
+  const [isFullscreenImage, setIsFullscreenImage] = useState(false);
 
   useEffect(() => {
     terminalEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -32,8 +33,37 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
     eventsEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [events]);
 
+  const hasStarted = events.length > 0;
+
   return (
     <div className="space-y-4">
+      {/* Live Progress Bar when Running */}
+      {hasStarted && (
+        <div className="solari-panel rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-[#222222]">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
+            <div>
+              <div className="text-xs font-bold text-white font-mono-code flex items-center gap-2">
+                <span>AI Live Audit In Progress</span>
+                <span className="text-[#888888]">({events.length} actions executed)</span>
+              </div>
+              <p className="text-[11px] text-[#777777]">
+                Navigating {currentUrl} • Trapping crashes • Verifying tests
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs font-mono-code">
+            <span className="px-2.5 py-1 rounded bg-[#111111] text-rose-400 border border-rose-900/40 font-bold">
+              {discoveredBugs.length} Issues Found
+            </span>
+            <span className="px-2.5 py-1 rounded bg-[#111111] text-emerald-400 border border-emerald-900/40">
+              MicroVM Active
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Tab Switcher */}
       <div className="flex xl:hidden items-center justify-between p-1 bg-[#0a0a0a] rounded-lg border border-[#1f1f1f]">
         <button
@@ -42,7 +72,7 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
             activeTab === 'all' ? 'bg-[#1c1c1c] text-white' : 'text-[#666666]'
           }`}
         >
-          All
+          All Panels
         </button>
         <button
           onClick={() => setActiveTab('reasoning')}
@@ -50,7 +80,7 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
             activeTab === 'reasoning' ? 'bg-[#1c1c1c] text-white' : 'text-[#666666]'
           }`}
         >
-          Agent Thoughts ({events.length})
+          1. AI Thoughts ({events.length})
         </button>
         <button
           onClick={() => setActiveTab('browser')}
@@ -58,7 +88,7 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
             activeTab === 'browser' ? 'bg-[#1c1c1c] text-white' : 'text-[#666666]'
           }`}
         >
-          Browser View
+          2. Live Browser
         </button>
         <button
           onClick={() => setActiveTab('sandbox')}
@@ -66,58 +96,72 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
             activeTab === 'sandbox' ? 'bg-[#1c1c1c] text-white' : 'text-[#666666]'
           }`}
         >
-          MicroVM
+          3. Test Runner
         </button>
       </div>
 
       {/* Tri-View Grid */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
-        {/* Panel 1: Agent Reasoning & Action Stream (4 cols) */}
+        {/* Panel 1: Agent Thoughts & Actions (4 cols) */}
         <div
-          className={`xl:col-span-4 solari-panel rounded-xl p-4 flex flex-col h-[500px] shadow-xl ${
+          className={`xl:col-span-4 solari-panel rounded-2xl p-4 flex flex-col h-[520px] shadow-xl border border-[#222222] ${
             activeTab !== 'all' && activeTab !== 'reasoning' ? 'hidden xl:flex' : 'flex'
           }`}
         >
           <div className="flex items-center justify-between pb-3 border-b border-[#1c1c1c]">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-white font-mono-code">
-                Agent Thought Stream
-              </h3>
+              <Sparkles className="w-4 h-4 text-white" />
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-white font-mono-code">
+                  1. AI Thinking & Actions
+                </h3>
+                <p className="text-[10px] text-[#666666]">Live step-by-step decision trail</p>
+              </div>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#141414] text-[#888888] font-mono-code border border-[#222222]">
+            <span className="text-[10px] px-2 py-0.5 rounded bg-[#141414] text-[#888888] font-mono-code border border-[#222222]">
               {events.length} steps
             </span>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-2.5 pt-3 pr-1 text-xs font-mono-code">
-            {events.length === 0 ? (
+            {!hasStarted ? (
               <div className="h-full flex flex-col items-center justify-center text-center p-6 text-[#555555]">
-                <Sparkles className="w-6 h-6 mb-2 text-[#444444]" />
-                <p className="text-xs">Awaiting audit trigger...</p>
+                <div className="w-10 h-10 rounded-full bg-[#111111] flex items-center justify-center mb-3 text-white">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-semibold text-white mb-1">Ready to explore</h4>
+                <p className="text-[11px] text-[#666666] max-w-xs">
+                  Click &ldquo;Run AI Audit&rdquo; or select a demo above to watch the agent analyze your site in real time.
+                </p>
               </div>
             ) : (
               events.map((ev, idx) => (
                 <div
                   key={idx}
-                  className={`p-2.5 rounded-lg border transition-all ${
+                  className={`p-3 rounded-xl border transition-all ${
                     ev.type === 'bug_detected'
-                      ? 'bg-[#160b0d] border-rose-900/40 text-rose-200'
+                      ? 'bg-[#18080a] border-rose-800/60 text-rose-200 shadow-md'
                       : ev.type === 'action'
-                      ? 'bg-[#0a0f18] border-indigo-900/40 text-indigo-200'
-                      : 'bg-[#0a0a0a] border-[#1c1c1c] text-[#cccccc]'
+                      ? 'bg-[#0a0f1c] border-indigo-800/50 text-indigo-200'
+                      : 'bg-[#0c0c0c] border-[#1f1f1f] text-[#cccccc]'
                   }`}
                 >
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-1.5">
                     <span className="flex items-center gap-1.5 text-[10px]">
                       {ev.type === 'bug_detected' ? (
-                        <Bug className="w-3 h-3 text-rose-400" />
+                        <span className="px-1.5 py-0.5 rounded bg-rose-500 text-white font-bold text-[9px] flex items-center gap-1">
+                          <Bug className="w-2.5 h-2.5" /> BUG TRAPPED
+                        </span>
                       ) : ev.type === 'action' ? (
-                        <Play className="w-3 h-3 text-indigo-400" />
+                        <span className="px-1.5 py-0.5 rounded bg-indigo-900/60 text-indigo-300 font-semibold text-[9px] flex items-center gap-1">
+                          <Play className="w-2.5 h-2.5" /> ACTION
+                        </span>
                       ) : (
-                        <Sparkles className="w-3 h-3 text-[#aaaaaa]" />
+                        <span className="px-1.5 py-0.5 rounded bg-[#1a1a1a] text-[#888888] text-[9px]">
+                          THOUGHT
+                        </span>
                       )}
-                      <span className="uppercase tracking-wide text-[#777777]">
+                      <span className="uppercase text-[#666666] text-[9px]">
                         {ev.stage.replace('_', ' ')}
                       </span>
                     </span>
@@ -125,7 +169,7 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
                       {new Date(ev.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                     </span>
                   </div>
-                  <p className="leading-relaxed text-[11px] text-[#dddddd]">{ev.message}</p>
+                  <p className="leading-relaxed text-[11px] text-[#e0e0e0]">{ev.message}</p>
                 </div>
               ))
             )}
@@ -135,58 +179,74 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
 
         {/* Panel 2: Live Browser Viewport Preview (4 cols) */}
         <div
-          className={`xl:col-span-4 solari-panel rounded-xl p-4 flex flex-col h-[500px] shadow-xl ${
+          className={`xl:col-span-4 solari-panel rounded-2xl p-4 flex flex-col h-[520px] shadow-xl border border-[#222222] ${
             activeTab !== 'all' && activeTab !== 'browser' ? 'hidden xl:flex' : 'flex'
           }`}
         >
           <div className="flex items-center justify-between pb-3 border-b border-[#1c1c1c]">
             <div className="flex items-center gap-2">
-              <Globe className="w-3.5 h-3.5 text-emerald-400" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-white font-mono-code">
-                Solari Stealth Browser
-              </h3>
+              <Globe className="w-4 h-4 text-emerald-400" />
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-white font-mono-code">
+                  2. Live Cloud Browser
+                </h3>
+                <p className="text-[10px] text-[#666666]">Real screen view as AI navigates</p>
+              </div>
             </div>
-            <div className="flex items-center gap-1.5 text-[10px] font-mono-code text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            <div className="flex items-center gap-1.5 text-[10px] font-mono-code text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-              <span>Live CDP Stream</span>
+              <span>Live Feed</span>
             </div>
           </div>
 
-          {/* Browser Chrome Window */}
-          <div className="mt-3 flex-1 flex flex-col rounded-lg overflow-hidden border border-[#1f1f1f] bg-[#050505]">
+          {/* Browser Window Canvas */}
+          <div className="mt-3 flex-1 flex flex-col rounded-xl overflow-hidden border border-[#222222] bg-[#050505]">
             {/* Address Bar */}
-            <div className="px-3 py-1.5 bg-[#0e0e0e] border-b border-[#1c1c1c] flex items-center gap-2">
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-[#333333]" />
-                <div className="w-2 h-2 rounded-full bg-[#333333]" />
-                <div className="w-2 h-2 rounded-full bg-[#333333]" />
+            <div className="px-3 py-2 bg-[#0e0e0e] border-b border-[#1c1c1c] flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full bg-[#333333]" />
+                <div className="w-2.5 h-2.5 rounded-full bg-[#333333]" />
+                <div className="w-2.5 h-2.5 rounded-full bg-[#333333]" />
               </div>
-              <div className="flex-1 bg-[#050505] px-2 py-0.5 rounded text-[10px] font-mono-code text-[#aaaaaa] truncate border border-[#1f1f1f]">
-                {currentUrl || 'about:blank'}
+              <div className="flex-1 bg-[#000000] px-2.5 py-1 rounded text-[10px] font-mono-code text-[#aaaaaa] truncate border border-[#1f1f1f]">
+                {currentUrl || 'https://your-website.com'}
               </div>
             </div>
 
             {/* Viewport Content */}
             <div className="flex-1 relative flex items-center justify-center bg-[#000000] p-2 overflow-hidden">
               {latestScreenshot ? (
-                <img
-                  src={latestScreenshot}
-                  alt="Solari Browser Live Viewport"
-                  className="w-full h-full object-contain rounded border border-[#1f1f1f]"
-                />
+                <div className="relative w-full h-full flex items-center justify-center group">
+                  <img
+                    src={latestScreenshot}
+                    alt="Live Browser Screen"
+                    className="w-full h-full object-contain rounded border border-[#1f1f1f]"
+                  />
+                  <button
+                    onClick={() => setIsFullscreenImage(true)}
+                    className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-black/80 hover:bg-black text-white text-xs border border-white/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 cursor-pointer"
+                  >
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span>Expand View</span>
+                  </button>
+                </div>
               ) : (
                 <div className="text-center p-6 text-[#555555] flex flex-col items-center">
-                  <Globe className="w-8 h-8 mb-2 text-[#333333] animate-pulse" />
-                  <p className="text-xs font-mono-code text-[#888888]">Solari Cloud Browser rendering...</p>
-                  <p className="text-[10px] font-mono-code text-[#555555] mt-0.5">Stealth CDP pipeline attached</p>
+                  <div className="w-12 h-12 rounded-xl bg-[#111111] flex items-center justify-center mb-3 text-[#666666]">
+                    <Globe className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <h4 className="text-xs font-semibold text-white mb-1">Browser Standing By</h4>
+                  <p className="text-[11px] text-[#666666] max-w-xs">
+                    When you run an audit, this window displays screenshots of what the AI browser sees.
+                  </p>
                 </div>
               )}
 
               {/* Bug overlay badge */}
               {discoveredBugs.length > 0 && (
-                <div className="absolute top-3 right-3 bg-rose-600 text-white text-[10px] font-bold font-mono-code px-2 py-0.5 rounded shadow-lg flex items-center gap-1">
-                  <ShieldAlert className="w-3 h-3" />
-                  <span>{discoveredBugs.length} Trapped</span>
+                <div className="absolute top-3 right-3 bg-rose-600 text-white text-[11px] font-bold font-mono-code px-2.5 py-1 rounded-lg shadow-xl flex items-center gap-1.5 animate-bounce">
+                  <ShieldAlert className="w-3.5 h-3.5" />
+                  <span>{discoveredBugs.length} Issues Found</span>
                 </div>
               )}
             </div>
@@ -195,31 +255,38 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
 
         {/* Panel 3: Solari MicroVM Sandbox Terminal (4 cols) */}
         <div
-          className={`xl:col-span-4 solari-panel rounded-xl p-4 flex flex-col h-[500px] shadow-xl ${
+          className={`xl:col-span-4 solari-panel rounded-2xl p-4 flex flex-col h-[520px] shadow-xl border border-[#222222] ${
             activeTab !== 'all' && activeTab !== 'sandbox' ? 'hidden xl:flex' : 'flex'
           }`}
         >
           <div className="flex items-center justify-between pb-3 border-b border-[#1c1c1c]">
             <div className="flex items-center gap-2">
-              <Cpu className="w-3.5 h-3.5 text-indigo-400" />
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-white font-mono-code">
-                Solari MicroVM Sandbox
-              </h3>
+              <Cpu className="w-4 h-4 text-indigo-400" />
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-white font-mono-code">
+                  3. Automated Test Runner
+                </h3>
+                <p className="text-[10px] text-[#666666]">Solari Linux MicroVM verification</p>
+              </div>
             </div>
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#141414] text-indigo-300 border border-[#222222] font-mono-code">
-              pytest-playwright
+            <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-950/40 text-indigo-300 border border-indigo-900/50 font-mono-code">
+              Playwright Kernel
             </span>
           </div>
 
-          <div className="mt-3 flex-1 bg-[#050505] rounded-lg p-3 font-mono-code text-[11px] text-[#cccccc] overflow-y-auto border border-[#1f1f1f] flex flex-col justify-between">
-            <div className="space-y-1">
-              <div className="text-[#555555] text-[10px] pb-1 border-b border-[#1c1c1c] flex items-center justify-between">
-                <span>[solari-microvm-linux-6.6-base]</span>
+          <div className="mt-3 flex-1 bg-[#050505] rounded-xl p-3.5 font-mono-code text-[11px] text-[#cccccc] overflow-y-auto border border-[#1f1f1f] flex flex-col justify-between">
+            <div className="space-y-1.5">
+              <div className="text-[#555555] text-[10px] pb-1.5 border-b border-[#1c1c1c] flex items-center justify-between">
+                <span>[solari-microvm-linux-base]</span>
                 <span className="text-emerald-400 font-bold">● ACTIVE</span>
               </div>
               {terminalLogs.length === 0 ? (
-                <div className="text-[#444444] italic py-8 text-center text-xs">
-                  Awaiting synthesized Playwright test script to execute inside isolated Linux sandbox...
+                <div className="text-center py-16 text-[#555555] flex flex-col items-center">
+                  <Cpu className="w-8 h-8 mb-2 text-[#333333]" />
+                  <p className="text-xs font-semibold text-white mb-1">Test Runner Idle</p>
+                  <p className="text-[11px] text-[#666666] max-w-xs">
+                    Whenever a bug is caught, AI writes an automated Playwright test and runs it here in an isolated sandbox.
+                  </p>
                 </div>
               ) : (
                 terminalLogs.map((log, idx) => (
@@ -227,7 +294,7 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
                     key={idx}
                     className={`leading-relaxed ${
                       log.level === 'error'
-                        ? 'text-rose-400'
+                        ? 'text-rose-400 font-semibold'
                         : log.level === 'success'
                         ? 'text-emerald-400 font-semibold'
                         : log.level === 'warning'
@@ -246,6 +313,23 @@ export const TriViewStream: React.FC<TriViewStreamProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Screenshot Modal */}
+      {isFullscreenImage && latestScreenshot && (
+        <div
+          onClick={() => setIsFullscreenImage(false)}
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 cursor-zoom-out"
+        >
+          <div className="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center">
+            <img
+              src={latestScreenshot}
+              alt="Fullscreen Browser Viewport"
+              className="max-h-[85vh] object-contain rounded-xl border border-white/20 shadow-2xl"
+            />
+            <p className="text-xs text-[#888888] font-mono-code mt-3">Click anywhere to close full preview</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

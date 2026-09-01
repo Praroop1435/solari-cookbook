@@ -27,6 +27,16 @@ export default function Home() {
       .catch(() => setSolariActive(true));
   }, [API_BASE]);
 
+  const handleReset = () => {
+    setIsLoading(false);
+    setCurrentUrl('');
+    setEvents([]);
+    setTerminalLogs([]);
+    setLatestScreenshot(null);
+    setDiscoveredBugs([]);
+    setQaReport(null);
+  };
+
   const handleStartAudit = async (config: AuditRequest) => {
     setIsLoading(true);
     setCurrentUrl(config.target_url);
@@ -107,8 +117,10 @@ export default function Home() {
       <Header solariConfigured={solariActive} />
 
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 w-full space-y-6">
+        {/* Main Audit Control Bar */}
         <AuditConfig onStartAudit={handleStartAudit} isLoading={isLoading} />
 
+        {/* Live 3-Panel Stream: AI Thoughts, Browser View, Sandbox Runner */}
         <TriViewStream
           events={events}
           latestScreenshot={latestScreenshot}
@@ -117,25 +129,28 @@ export default function Home() {
           discoveredBugs={discoveredBugs}
         />
 
-        {qaReport && <QualityScorecard report={qaReport} />}
+        {/* Completed QA Audit Scorecard */}
+        {qaReport && <QualityScorecard report={qaReport} onReset={handleReset} />}
 
+        {/* Discovered Bugs Matrix & Playwright Suites */}
         {(discoveredBugs.length > 0 || qaReport) && (
           <BugReportCard bugs={qaReport ? qaReport.bugs : discoveredBugs} />
         )}
       </main>
 
-      <footer className="border-t border-[#141414] bg-[#000000] py-4 text-center text-[11px] font-mono-code text-[#555555]">
+      {/* Footer */}
+      <footer className="border-t border-[#141414] bg-[#000000] py-6 text-center text-xs font-mono-code text-[#555555]">
         <p>
           BugScout AI — Built with{' '}
           <a
             href="https://getsolari.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-white hover:underline"
+            className="text-white hover:underline font-semibold"
           >
             Solari Cloud Infrastructure
           </a>{' '}
-          (Browsers, MicroVM Sandboxes, Session Recordings).
+          (Stealth Browsers, MicroVM Sandboxes, Session Recordings).
         </p>
       </footer>
     </div>
