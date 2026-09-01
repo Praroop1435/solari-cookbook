@@ -59,7 +59,7 @@ export const BugReportCard: React.FC<BugReportCardProps> = ({ bugs }) => {
 
 **Severity**: \`${bug.severity.toUpperCase()}\` | **CVSS v3.1 Score**: \`${bug.cvss_score || 'N/A'}\`
 **OWASP Taxonomy**: \`${bug.owasp_category || bug.category}\` | **CWE**: \`${bug.cwe_id || 'N/A'}\`
-**AI Models Confirmed**: ${(bug.models_confirmed || ['Gemini 2.0', 'Claude 3.5', 'GPT-4o']).join(', ')} (Confidence: ${Math.round((bug.confidence_score || 0.92) * 100)}%)
+**AI Models Confirmed**: ${(bug.models_confirmed || ['Gemini 3.5', 'Claude 3.7', 'GPT-4o']).join(', ')} (Confidence: ${Math.round((bug.confidence_score || 0.92) * 100)}%)
 **Solari MicroVM Verified**: ${bug.verified_in_sandbox ? '✅ YES' : '❌ NO'}
 
 ---
@@ -226,7 +226,7 @@ ${bug.remediation_patch?.nextjs || bug.remediation_patch?.fastapi || '// Consult
                       <Cpu className="w-3.5 h-3.5 text-purple-400" />
                       <span>Confirmed by:</span>
                       <span className="text-white font-semibold">
-                        {(bug.models_confirmed || ['Gemini 2.0', 'Claude 3.5', 'GPT-4o']).join(' + ')}
+                        {(bug.models_confirmed || ['Gemini 3.5', 'Claude 3.7', 'GPT-4o']).join(' + ')}
                       </span>
                     </div>
 

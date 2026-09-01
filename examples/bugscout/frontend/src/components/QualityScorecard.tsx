@@ -237,8 +237,8 @@ ${b.remediation_patch?.nextjs || b.remediation_patch?.fastapi || '// Refer to OW
           <div className="flex items-center gap-1.5 text-[10px] font-mono-code text-[#888888]">
             <Cpu className="w-3.5 h-3.5 text-cyan-400" />
             <span>Ensemble:</span>
-            <span className="px-1.5 py-0.5 rounded bg-[#141414] text-emerald-300 border border-[#222]">Gemini 2.0</span>
-            <span className="px-1.5 py-0.5 rounded bg-[#141414] text-amber-300 border border-[#222]">Claude 3.5</span>
+            <span className="px-1.5 py-0.5 rounded bg-[#141414] text-emerald-300 border border-[#222]">Gemini 3.5</span>
+            <span className="px-1.5 py-0.5 rounded bg-[#141414] text-amber-300 border border-[#222]">Claude 3.7</span>
             <span className="px-1.5 py-0.5 rounded bg-[#141414] text-cyan-300 border border-[#222]">GPT-4o</span>
           </div>
         </div>

@@ -277,7 +277,7 @@ class BrowserAgent:
                         cwe_id="CWE-754",
                         cvss_score=6.2 if is_critical else 4.0,
                         owasp_category="A05:2021-Security Misconfiguration",
-                        models_confirmed=["Claude 3.5 Sonnet", "Gemini 2.0 Flash"],
+                        models_confirmed=["Claude 3.7 Sonnet", "Gemini 3.5 Flash Lite"],
                         confidence_score=0.94,
                         description=f"JavaScript runtime error on {request.target_url}: {err}",
                         stack_trace=err,

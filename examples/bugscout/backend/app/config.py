@@ -22,11 +22,11 @@ class Settings(BaseSettings):
     gemini_api_key: str | None = Field(
         default_factory=lambda: os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
     )
-    gemini_model: str = Field(default="gemini-2.0-flash-lite")
+    gemini_model: str = Field(default="gemini-3.5-flash-lite")
     openai_api_key: str | None = Field(default_factory=lambda: os.getenv("OPENAI_API_KEY"))
-    openai_model: str = Field(default="gpt-4o-mini")
+    openai_model: str = Field(default="gpt-4o")
     anthropic_api_key: str | None = Field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY"))
-    anthropic_model: str = Field(default="claude-3-5-sonnet-20241022")
+    anthropic_model: str = Field(default="claude-3-7-sonnet-20250219")
 
     # Server settings
     host: str = "0.0.0.0"

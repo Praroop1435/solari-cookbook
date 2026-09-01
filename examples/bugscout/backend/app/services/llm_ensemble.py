@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 class LLMEnsemble:
-    """Multi-Model AI Consensus Engine combining Anthropic Claude, OpenAI GPT-4o, and Google Gemini."""
+    """Multi-Model AI Consensus Engine combining Anthropic Claude 3.7, OpenAI GPT-4o, and Google Gemini 3.5 Flash Lite."""
 
     def __init__(self):
         self.gemini_client = None
@@ -51,15 +51,15 @@ class LLMEnsemble:
     def get_active_models(self) -> list[dict[str, Any]]:
         return [
             {
-                "id": "gemini-2.0-flash",
-                "name": "Google Gemini 2.0",
+                "id": "gemini-3.5-flash-lite",
+                "name": "Google Gemini 3.5 Flash Lite",
                 "provider": "google",
                 "role": "Real-Time Telemetry & DOM Analysis",
                 "active": bool(self.gemini_client),
             },
             {
-                "id": "claude-3-5-sonnet",
-                "name": "Anthropic Claude 3.5",
+                "id": "claude-3-7-sonnet",
+                "name": "Anthropic Claude 3.7 Sonnet",
                 "provider": "anthropic",
                 "role": "Threat Modeling & Remediation Patches",
                 "active": bool(self.anthropic_client),
@@ -89,10 +89,10 @@ class LLMEnsemble:
                 f"Calculated CVSS Base Score: {bug.cvss_score or 5.0}."
             )
             events.append(
-                {"model": "Gemini 2.0 Flash", "thought": gemini_thought, "status": "confirmed"}
+                {"model": "Gemini 3.5 Flash Lite", "thought": gemini_thought, "status": "confirmed"}
             )
 
-        # 2. Claude Analysis (Live or Multi-Perspective Engine)
+        # 2. Claude 3.7 Analysis
         if "claude" in enabled_models:
             if self.anthropic_client:
                 try:
@@ -107,8 +107,8 @@ class LLMEnsemble:
                         ],
                     )
                     claude_thought = (
-                        res.content[0].text
-                        if res.content
+                        str(res.content[0].text)
+                        if hasattr(res, "content") and res.content
                         else f"Confirmed {bug.owasp_category} vulnerability."
                     )
                 except Exception as e:
@@ -118,10 +118,10 @@ class LLMEnsemble:
                 claude_thought = f"Threat Model Confirmed: Exploitability mapped to {bug.owasp_category or 'OWASP Top 10'}. Recommended immediate header/flag configuration."
 
             events.append(
-                {"model": "Claude 3.5 Sonnet", "thought": claude_thought, "status": "confirmed"}
+                {"model": "Claude 3.7 Sonnet", "thought": claude_thought, "status": "confirmed"}
             )
 
-        # 3. GPT-4o Analysis (Live or Multi-Perspective Engine)
+        # 3. GPT-4o Analysis
         if "gpt" in enabled_models:
             if self.openai_client:
                 try:

@@ -265,7 +265,7 @@ export const AuditConfig: React.FC<AuditConfigProps> = ({ onStartAudit, isLoadin
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-emerald-400" />
                 <div>
-                  <div className="text-xs font-bold text-white font-mono-code">Google Gemini 2.0</div>
+                  <div className="text-xs font-bold text-white font-mono-code">Google Gemini 3.5 Flash Lite</div>
                   <div className="text-[10px] text-[#666666]">Telemetry & DOM Analysis</div>
                 </div>
               </div>
@@ -282,7 +282,7 @@ export const AuditConfig: React.FC<AuditConfigProps> = ({ onStartAudit, isLoadin
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-amber-400" />
                 <div>
-                  <div className="text-xs font-bold text-white font-mono-code">Anthropic Claude 3.5</div>
+                  <div className="text-xs font-bold text-white font-mono-code">Anthropic Claude 3.7 Sonnet</div>
                   <div className="text-[10px] text-[#666666]">Threat Modeling & Fixes</div>
                 </div>
               </div>

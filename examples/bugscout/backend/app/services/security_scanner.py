@@ -41,7 +41,7 @@ class SecurityScanner:
                     cwe_id="CWE-1021",
                     cvss_score=5.4,
                     owasp_category="A05:2021-Security Misconfiguration",
-                    models_confirmed=["Claude 3.5 Sonnet", "GPT-4o", "Gemini 2.0 Flash"],
+                    models_confirmed=["Claude 3.7 Sonnet", "GPT-4o", "Gemini 3.5 Flash Lite"],
                     confidence_score=0.98,
                     description="The server response omits a Content-Security-Policy header. A strong CSP restricts the origins of scripts, images, and objects, defending against Cross-Site Scripting (XSS) and data injection.",
                     remediation_patch={
@@ -70,7 +70,7 @@ class SecurityScanner:
                     cwe_id="CWE-319",
                     cvss_score=4.8,
                     owasp_category="A02:2021-Cryptographic Failures",
-                    models_confirmed=["Claude 3.5 Sonnet", "GPT-4o", "Gemini 2.0 Flash"],
+                    models_confirmed=["Claude 3.7 Sonnet", "GPT-4o", "Gemini 3.5 Flash Lite"],
                     confidence_score=0.96,
                     description="The web server does not enforce HTTPS connections via HSTS. Browsers may be susceptible to SSL-stripping man-in-the-middle (MITM) downgrade attacks.",
                     remediation_patch={
@@ -98,7 +98,7 @@ class SecurityScanner:
                     cwe_id="CWE-1021",
                     cvss_score=3.7,
                     owasp_category="A05:2021-Security Misconfiguration",
-                    models_confirmed=["Claude 3.5 Sonnet", "GPT-4o", "Gemini 2.0 Flash"],
+                    models_confirmed=["Claude 3.7 Sonnet", "GPT-4o", "Gemini 3.5 Flash Lite"],
                     confidence_score=0.95,
                     description="The page can be embedded inside an external <iframe>, leaving users vulnerable to clickjacking overlay attacks.",
                     remediation_patch={
@@ -155,7 +155,7 @@ class SecurityScanner:
                     cwe_id="CWE-942",
                     cvss_score=7.3,
                     owasp_category="A01:2021-Broken Access Control",
-                    models_confirmed=["Claude 3.5 Sonnet", "GPT-4o", "Gemini 2.0 Flash"],
+                    models_confirmed=["Claude 3.7 Sonnet", "GPT-4o", "Gemini 3.5 Flash Lite"],
                     confidence_score=0.99,
                     description="The server returns 'Access-Control-Allow-Origin: *' alongside credentials. This allows arbitrary malicious third-party websites to read sensitive authenticated responses.",
                     remediation_patch={
@@ -194,7 +194,7 @@ class SecurityScanner:
                         cwe_id="CWE-1004",
                         cvss_score=6.8,
                         owasp_category="A07:2021-Identification and Authentication Failures",
-                        models_confirmed=["Claude 3.5 Sonnet", "GPT-4o", "Gemini 2.0 Flash"],
+                        models_confirmed=["Claude 3.7 Sonnet", "GPT-4o", "Gemini 3.5 Flash Lite"],
                         confidence_score=0.97,
                         description=f"Cookie '{name}' stores session/auth credentials but lacks the HttpOnly attribute. Any Cross-Site Scripting (XSS) vulnerability can access this cookie via document.cookie.",
                         remediation_patch={
@@ -261,7 +261,11 @@ class SecurityScanner:
                             cwe_id="CWE-319",
                             cvss_score=8.5,
                             owasp_category="A02:2021-Cryptographic Failures",
-                            models_confirmed=["Claude 3.5 Sonnet", "GPT-4o", "Gemini 2.0 Flash"],
+                            models_confirmed=[
+                                "Claude 3.7 Sonnet",
+                                "GPT-4o",
+                                "Gemini 3.5 Flash Lite",
+                            ],
                             confidence_score=0.99,
                             description="Password credentials are submitted over an unencrypted HTTP channel, allowing network eavesdroppers to intercept plaintext passwords.",
                             remediation_patch={
@@ -290,7 +294,11 @@ class SecurityScanner:
                             cwe_id=cwe,
                             cvss_score=cvss,
                             owasp_category="A02:2021-Cryptographic Failures",
-                            models_confirmed=["Claude 3.5 Sonnet", "GPT-4o", "Gemini 2.0 Flash"],
+                            models_confirmed=[
+                                "Claude 3.7 Sonnet",
+                                "GPT-4o",
+                                "Gemini 3.5 Flash Lite",
+                            ],
                             confidence_score=0.96,
                             description=f"A pattern matching {name} was identified in client-side HTML or embedded scripts. Never expose live production keys in frontend bundles.",
                             remediation_patch={

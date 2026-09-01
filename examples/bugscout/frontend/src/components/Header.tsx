@@ -46,9 +46,9 @@ export const Header: React.FC<HeaderProps> = ({ solariConfigured = true }) => {
           <div className="hidden md:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#0a0a0a] border border-[#222222] text-[11px] font-mono-code text-[#aaaaaa]">
             <Cpu className="w-3.5 h-3.5 text-cyan-400" />
             <span>Ensemble:</span>
-            <span className="text-emerald-400 font-semibold">Gemini 2.0</span>
+            <span className="text-emerald-400 font-semibold">Gemini 3.5</span>
             <span className="text-[#444444]">|</span>
-            <span className="text-amber-400 font-semibold">Claude 3.5</span>
+            <span className="text-amber-400 font-semibold">Claude 3.7</span>
             <span className="text-[#444444]">|</span>
             <span className="text-cyan-400 font-semibold">GPT-4o</span>
           </div>
